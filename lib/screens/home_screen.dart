@@ -14,7 +14,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     // Fetch movies when screen loads
+      WidgetsBinding.instance.addPostFrameCallback((_) {
     Provider.of<MovieProvider>(context, listen: false).fetchNowPlayingMovies();
+     });
   }
 
   @override
