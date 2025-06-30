@@ -15,4 +15,15 @@ class MovieApiService {
       throw Exception('Failed to load now playing movies');
     }
   }
+
+  Future<List<Movie>> fetchMovies(String url) async {
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final List results = data['results'];
+      return results.map((json) => Movie.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load movies');
+    }
+  }
 }

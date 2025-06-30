@@ -15,7 +15,17 @@ class ApiEndpoints {
 
   // Now Playing Movies
   static const String nowPlaying = '$baseUrl/movie/now_playing?api_key=$apiKey';
+  // Popular Movies
+  static const String popular = '$baseUrl/movie/popular?api_key=$apiKey';
+  // Top Rated Movies
+  static const String topRated = '$baseUrl/movie/top_rated?api_key=$apiKey';
 
   // Movie Details (dynamic URL based on movie ID)
   static String movieDetails(int id) => '$baseUrl/movie/$id?api_key=$apiKey';
+
+  //for searching
+  static String searchMovies(String query) =>
+    '$baseUrl/search/movie?api_key=$apiKey&query=$query';
+
+
 }
