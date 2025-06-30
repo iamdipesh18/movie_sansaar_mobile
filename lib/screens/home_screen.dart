@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:movie_sansaar_mobile/config/api_endpoint.dart';
 import 'package:provider/provider.dart';
 import '../providers/movie_provider.dart';
 
@@ -14,9 +15,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     // Fetch movies when screen loads
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-    Provider.of<MovieProvider>(context, listen: false).fetchNowPlayingMovies();
-     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<MovieProvider>(
+        context,
+        listen: false,
+      ).fetchNowPlayingMovies();
+    });
   }
 
   @override
@@ -33,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 final movie = movieProvider.nowPlayingMovies[index];
                 return ListTile(
                   leading: Image.network(
-                    'https://image.tmdb.org/t/p/w92${movie.posterPath}',
+                    '${ApiEndpoints.imageBaseUrl}${movie.posterPath}',
                     width: 50,
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => const Icon(Icons.movie),
