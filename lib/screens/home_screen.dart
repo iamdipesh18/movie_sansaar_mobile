@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:movie_sansaar_mobile/config/api_endpoint.dart';
+import 'package:movie_sansaar_mobile/screens/movie_details_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/movie_provider.dart';
 import '../models/movie.dart';
@@ -16,7 +17,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<MovieProvider>(context, listen: false).fetchNowPlayingMovies();
+      Provider.of<MovieProvider>(
+        context,
+        listen: false,
+      ).fetchNowPlayingMovies();
     });
   }
 
@@ -52,56 +56,69 @@ class MovieCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Poster image
-          Container(
-            width: 100,
-            height: 150,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(4),
-                bottomLeft: Radius.circular(4),
-              ),
-              image: DecorationImage(
-                image: NetworkImage('${ApiEndpoints.imageBaseUrl}${movie.posterPath}'),
-                fit: BoxFit.cover,
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => MovieDetailsScreen(movie: movie)),
+        );
+      },
+      child: Card(
+        elevation: 4,
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Poster image
+            Container(
+              width: 100,
+              height: 150,
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(4),
+                  bottomLeft: Radius.circular(4),
+                ),
+                image: DecorationImage(
+                  image: NetworkImage(
+                    '${ApiEndpoints.imageBaseUrl}${movie.posterPath}',
+                  ),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-          ),
 
-          // Movie details
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    movie.title,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    movie.releaseDate,
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    movie.overview,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                ],
+            // Movie details
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      movie.title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      movie.releaseDate,
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      movie.overview,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
