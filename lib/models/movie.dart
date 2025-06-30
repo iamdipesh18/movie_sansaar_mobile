@@ -26,17 +26,3 @@ class Movie {
     );
   }
 }
-
-
-/*
-
-{
-  "id": 1,
-  "title": "Inception",
-  "overview": "A thief who steals corporate secrets...",
-  "poster_path": "/abc123.jpg",
-  "vote_average": 8.8,
-  "release_date": "2010-07-16"
-}
-
-*/
