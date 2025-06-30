@@ -5,14 +5,14 @@ import 'package:provider/provider.dart';
 import '../providers/movie_provider.dart';
 import '../models/movie.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class NowPlayingScreen extends StatefulWidget {
+  const NowPlayingScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<NowPlayingScreen> createState() => _NowPlayingScreen();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _NowPlayingScreen extends State<NowPlayingScreen> {
   @override
   void initState() {
     super.initState();
