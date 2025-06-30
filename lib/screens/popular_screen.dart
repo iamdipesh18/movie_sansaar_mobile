@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:movie_sansaar_mobile/screens/now_playing_screen.dart';
+import 'package:movie_sansaar_mobile/screens/search_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/movie_provider.dart';
 
@@ -25,7 +26,20 @@ class _PopularScreenState extends State<PopularScreen> {
     final movies = movieProvider.popularMovies;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Popular Movies')),
+      appBar: AppBar(
+        title: const Text('Popular Movies'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SearchScreen()),
+              );
+            },
+          ),
+        ],
+      ),
       body: movieProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(

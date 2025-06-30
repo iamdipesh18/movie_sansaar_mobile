@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:movie_sansaar_mobile/config/api_endpoint.dart';
 import 'package:movie_sansaar_mobile/screens/movie_details_screen.dart';
+import 'package:movie_sansaar_mobile/screens/search_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/movie_provider.dart';
 import '../models/movie.dart';
@@ -32,6 +33,17 @@ class _NowPlayingScreen extends State<NowPlayingScreen> {
       appBar: AppBar(
         title: const Text('Now Playing'),
         backgroundColor: Colors.redAccent,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SearchScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: movieProvider.isLoading
           ? const Center(child: CircularProgressIndicator())

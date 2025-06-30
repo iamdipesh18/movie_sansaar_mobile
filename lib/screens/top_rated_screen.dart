@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:movie_sansaar_mobile/screens/search_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/movie_provider.dart';
 import '../widgets/movie_card.dart';
@@ -25,7 +26,20 @@ class _TopRatedScreen extends State<TopRatedScreen> {
     final movies = movieProvider.popularMovies;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Top Rated Movies')),
+      appBar: AppBar(
+        title: const Text('Top Rated Movies'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SearchScreen()),
+              );
+            },
+          ),
+        ],
+      ),
       body: movieProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
