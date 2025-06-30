@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/movie.dart';
-import 'package:movie_sansaar_mobile/services/movie_api.dart';
+import 'package:movie_sansaar_mobile/services/movie_api_service.dart';
 
 class MovieProvider with ChangeNotifier {
   final MovieApiService _apiService = MovieApiService();

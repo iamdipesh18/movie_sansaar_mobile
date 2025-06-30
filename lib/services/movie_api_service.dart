@@ -9,7 +9,7 @@ class MovieApiService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      final List results = data['results']; // might be data directly
+      final List results = data['results'];
       return results.map((json) => Movie.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load now playing movies');
