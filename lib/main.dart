@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'app.dart';
 
 void main() {
-  runApp(const MovieSansaarApp());
+  runApp(const App());
 }
 
 class MovieSansaarApp extends StatelessWidget {
