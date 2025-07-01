@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:movie_sansaar_mobile/config/api_endpoint.dart';
 import 'package:movie_sansaar_mobile/providers/movie_provider.dart';
 import 'package:provider/provider.dart';
-import '../models/movie.dart';
 import '../widgets/movie_card.dart';
 
 class NowPlayingScreen extends StatefulWidget {

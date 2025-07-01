@@ -25,7 +25,21 @@ class ApiEndpoints {
 
   //for searching
   static String searchMovies(String query) =>
-    '$baseUrl/search/movie?api_key=$apiKey&query=$query';
+      '$baseUrl/search/movie?api_key=$apiKey&query=$query';
 
+  // ===================== SERIES (TV) ENDPOINTS =====================
+  static const String airingTodaySeries =
+      '$baseUrl/tv/airing_today?api_key=$apiKey';
+  static const String popularSeries = '$baseUrl/tv/popular?api_key=$apiKey';
+  static const String topRatedSeries = '$baseUrl/tv/top_rated?api_key=$apiKey';
 
+  static String seriesDetails(int id) => '$baseUrl/tv/$id?api_key=$apiKey';
+
+  static String searchSeries(String query) =>
+      '$baseUrl/search/tv?api_key=$apiKey&query=$query';
+
+  static String seriesTrailer(int id) =>
+      '$baseUrl/tv/$id/videos?api_key=$apiKey';
+
+  // You can add more TV endpoints here as needed
 }

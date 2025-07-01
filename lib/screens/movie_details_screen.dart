@@ -19,10 +19,11 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => TrailerPlayerScreen(
-          movieId: widget.movie.id,
-          movieTitle: widget.movie.title,
+          contentId: widget.movie.id,
+          contentTitle: widget.movie.title,
           posterUrl:
               'https://image.tmdb.org/t/p/w500${widget.movie.posterPath}',
+          isSeries: false, // This is optional since false is default
         ),
       ),
     );

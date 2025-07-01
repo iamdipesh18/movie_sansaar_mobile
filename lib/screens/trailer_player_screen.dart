@@ -8,17 +8,21 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/movie_api_service.dart';
+import '../services/series_api_service.dart';
 
+/// A full-featured trailer player screen supporting both movies and TV series
 class TrailerPlayerScreen extends StatefulWidget {
-  final int movieId;
-  final String movieTitle;
-  final String posterUrl;
+  final int contentId; // Can be a movie ID or series ID
+  final String contentTitle; // Title to show on screen
+  final String posterUrl; // Poster used as background / fallback
+  final bool isSeries; // Whether it's a series or a movie
 
   const TrailerPlayerScreen({
     super.key,
-    required this.movieId,
-    required this.movieTitle,
+    required this.contentId,
+    required this.contentTitle,
     required this.posterUrl,
+    this.isSeries = false, // default to movie if not specified
   });
 
   @override
@@ -31,7 +35,6 @@ class _TrailerPlayerScreenState extends State<TrailerPlayerScreen>
   bool _isLoading = true;
   bool _hasError = false;
   bool _isLandscape = false;
-  late MovieApiService _apiService;
   Timer? _controlsTimer;
   Duration _resumePosition = Duration.zero;
 
@@ -39,9 +42,8 @@ class _TrailerPlayerScreenState extends State<TrailerPlayerScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _apiService = MovieApiService();
 
-    // Force portrait mode at the start
+    // Start in portrait mode
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
@@ -57,11 +59,13 @@ class _TrailerPlayerScreenState extends State<TrailerPlayerScreen>
     super.dispose();
   }
 
+  /// Restore portrait mode on exit
   void _restorePortraitMode() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   }
 
+  /// Pause video when app goes background
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused) {
@@ -69,7 +73,7 @@ class _TrailerPlayerScreenState extends State<TrailerPlayerScreen>
     }
   }
 
-  // Initializes YouTube player with resume time
+  /// Initializes the trailer by fetching the YouTube video key
   Future<void> _initializePlayer() async {
     setState(() {
       _isLoading = true;
@@ -78,28 +82,28 @@ class _TrailerPlayerScreenState extends State<TrailerPlayerScreen>
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final millis = prefs.getInt('resume_${widget.movieId}') ?? 0;
+      final millis = prefs.getInt('resume_${widget.contentId}') ?? 0;
       _resumePosition = Duration(milliseconds: millis);
 
-      final videoKey = await _apiService.fetchTrailerKey(widget.movieId);
+      // Fetch video key using the right API service
+      final videoKey = widget.isSeries
+          ? await SeriesApiService().fetchTrailerKey(widget.contentId)
+          : await MovieApiService().fetchTrailerKey(widget.contentId);
 
       if (videoKey == null) {
         setState(() => _hasError = true);
         return;
       }
 
-      _controller =
-          YoutubePlayerController(
-            initialVideoId: videoKey,
-            flags: const YoutubePlayerFlags(
-              autoPlay: true,
-              mute: false,
-              enableCaption: true,
-              forceHD: true,
-            ),
-          )..addListener(() {
-            setState(() {});
-          });
+      _controller = YoutubePlayerController(
+        initialVideoId: videoKey,
+        flags: const YoutubePlayerFlags(
+          autoPlay: true,
+          mute: false,
+          enableCaption: true,
+          forceHD: true,
+        ),
+      )..addListener(() => setState(() {}));
 
       await Future.delayed(const Duration(milliseconds: 300));
 
@@ -113,34 +117,32 @@ class _TrailerPlayerScreenState extends State<TrailerPlayerScreen>
     }
   }
 
-  // Save video resume position using SharedPreferences
+  /// Saves current playback time to preferences
   Future<void> _saveResumeTime() async {
     if (_controller == null) return;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(
-      'resume_${widget.movieId}',
+      'resume_${widget.contentId}',
       _controller!.value.position.inMilliseconds,
     );
   }
 
-  // Toggle screen orientation between portrait & landscape
+  /// Switch between portrait and landscape
   void _toggleOrientation() {
     setState(() => _isLandscape = !_isLandscape);
 
     if (_isLandscape) {
-      // Enter full landscape mode
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeLeft,
         DeviceOrientation.landscapeRight,
       ]);
     } else {
-      // Return to portrait
       _restorePortraitMode();
     }
   }
 
-  // Shimmer shown while trailer is loading
+  /// Shimmer while loading video
   Widget _buildLoadingShimmer() {
     return Center(
       child: Padding(
@@ -151,11 +153,7 @@ class _TrailerPlayerScreenState extends State<TrailerPlayerScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                height: 200,
-                width: double.infinity,
-                color: Colors.white,
-              ),
+              Container(height: 200, color: Colors.white),
               const SizedBox(height: 20),
               Container(height: 20, width: 150, color: Colors.white),
             ],
@@ -165,7 +163,7 @@ class _TrailerPlayerScreenState extends State<TrailerPlayerScreen>
     );
   }
 
-  // Fallback UI if trailer fetch fails
+  /// Error fallback if video fails to load
   Widget _buildErrorUI() {
     return Stack(
       fit: StackFit.expand,
@@ -182,10 +180,7 @@ class _TrailerPlayerScreenState extends State<TrailerPlayerScreen>
             children: [
               const Icon(Icons.error_outline, color: Colors.white, size: 48),
               const SizedBox(height: 12),
-              const Text(
-                "Trailer not available",
-                style: TextStyle(color: Colors.white),
-              ),
+              const Text("Trailer not available", style: TextStyle(color: Colors.white)),
               const SizedBox(height: 12),
               ElevatedButton.icon(
                 onPressed: _initializePlayer,
@@ -199,18 +194,17 @@ class _TrailerPlayerScreenState extends State<TrailerPlayerScreen>
     );
   }
 
-  // Actual YouTube player with controls and orientation toggle
+  /// Main YouTube player with backdrop, fullscreen toggle
   Widget _buildPlayerView() {
     return YoutubePlayerBuilder(
       player: YoutubePlayer(
         controller: _controller!,
         showVideoProgressIndicator: true,
-        onEnded: (meta) => _saveResumeTime(),
+        onEnded: (_) => _saveResumeTime(),
       ),
       builder: (context, player) {
         return Stack(
           children: [
-            // Background poster with dim
             Positioned.fill(
               child: CachedNetworkImage(
                 imageUrl: widget.posterUrl,
@@ -219,40 +213,28 @@ class _TrailerPlayerScreenState extends State<TrailerPlayerScreen>
                 colorBlendMode: BlendMode.darken,
               ),
             ),
-
-            // YouTube Player in fixed 16:9 box
             Center(
               child: AspectRatio(
                 aspectRatio: 16 / 9,
-                child: YoutubePlayer(controller: _controller!),
+                child: player,
               ),
             ),
-
-            // Top controls: Back on the left, Toggle on the right
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // 🔙 Back Button (left side)
                     IconButton(
                       icon: const Icon(Icons.arrow_back, color: Colors.white),
                       onPressed: () async {
                         if (_isLandscape) {
                           _toggleOrientation();
-                          await Future.delayed(
-                            const Duration(milliseconds: 300),
-                          );
+                          await Future.delayed(const Duration(milliseconds: 300));
                         }
                         Navigator.of(context).pop();
                       },
                     ),
-
-                    // 🔄 Orientation Toggle (right side)
                     IconButton(
                       icon: Icon(
                         _isLandscape ? Icons.fullscreen_exit : Icons.fullscreen,
@@ -270,6 +252,7 @@ class _TrailerPlayerScreenState extends State<TrailerPlayerScreen>
     );
   }
 
+  /// Entry point of screen
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -282,12 +265,11 @@ class _TrailerPlayerScreenState extends State<TrailerPlayerScreen>
       },
       child: Scaffold(
         backgroundColor: Colors.black,
-        appBar: null, // AppBar not needed due to custom controls
         body: _isLoading
             ? _buildLoadingShimmer()
             : _hasError
-            ? _buildErrorUI()
-            : _buildPlayerView(),
+                ? _buildErrorUI()
+                : _buildPlayerView(),
       ),
     );
   }

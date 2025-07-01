@@ -8,10 +8,12 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
+          // Header with logo and app title
           DrawerHeader(
             decoration: const BoxDecoration(color: Colors.redAccent),
             child: Column(
@@ -19,9 +21,7 @@ class AppDrawer extends StatelessWidget {
               children: [
                 const CircleAvatar(
                   radius: 30,
-                  backgroundImage: AssetImage(
-                    'assets/logo.png',
-                  ), // Your logo here
+                  backgroundImage: AssetImage('assets/logo.png'),
                 ),
                 const SizedBox(height: 12),
                 const Text(
@@ -40,44 +40,49 @@ class AppDrawer extends StatelessWidget {
             ),
           ),
 
-          // Navigation items
+          // Home navigation (same as Movies)
           ListTile(
             leading: const Icon(Icons.home),
             title: const Text('Home'),
             onTap: () {
               Navigator.pop(context);
-              // Maybe reset to first tab? You can manage that with a callback or provider
+              Navigator.pushNamed(context, '/');
             },
           ),
+
           ListTile(
             leading: const Icon(Icons.movie),
             title: const Text('Movies'),
             onTap: () {
               Navigator.pop(context);
-              // Navigate to movies or switch tab as needed
+              Navigator.pushNamed(context, '/'); // same as Home
             },
           ),
+
           ListTile(
             leading: const Icon(Icons.tv),
             title: const Text('TV Series'),
             onTap: () {
               Navigator.pop(context);
-              // Navigate accordingly
+              Navigator.pushNamed(context, '/series');
             },
           ),
+
           const Divider(),
 
+          // Contact navigation
           ListTile(
             leading: const Icon(Icons.contact_mail),
             title: const Text('Contact Us'),
             onTap: () {
               Navigator.pop(context);
-              // Navigate to contact page
+              Navigator.pushNamed(context, '/contact');
             },
           ),
+
           const Divider(),
 
-          // Theme toggle switch moved here
+          // Dark mode toggle
           SwitchListTile(
             title: const Text('Dark Mode'),
             value: themeProvider.isDarkMode,
@@ -85,12 +90,13 @@ class AppDrawer extends StatelessWidget {
             secondary: const Icon(Icons.dark_mode),
           ),
 
+          // Sign In and Sign Up navigation
           ListTile(
             leading: const Icon(Icons.login),
             title: const Text('Sign In'),
             onTap: () {
               Navigator.pop(context);
-              // Navigate to Sign In screen
+              Navigator.pushNamed(context, '/signin');
             },
           ),
           ListTile(
@@ -98,7 +104,7 @@ class AppDrawer extends StatelessWidget {
             title: const Text('Sign Up'),
             onTap: () {
               Navigator.pop(context);
-              // Navigate to Sign Up screen
+              Navigator.pushNamed(context, '/signup');
             },
           ),
         ],

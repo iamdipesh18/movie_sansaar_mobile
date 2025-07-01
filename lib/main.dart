@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:movie_sansaar_mobile/screens/series/series_home_screen.dart';
 import 'package:provider/provider.dart';
 import 'providers/movie_provider.dart';
 import 'providers/theme_provider.dart';
+import 'providers/series_provider.dart';
 import 'screens/home_page.dart';
+import 'screens/contact.dart';
+import 'screens/sign_in.dart';
+import 'screens/sign_up.dart';
 
 void main() {
   runApp(
@@ -10,6 +15,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => MovieProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => SeriesProvider()),
       ],
       child: const MyApp(),
     ),
@@ -31,7 +37,14 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.dark,
         colorScheme: const ColorScheme.dark(primary: Colors.redAccent),
       ),
-      home: const HomePage(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const HomePage(),
+        '/series': (context) => const SeriesMainScreen(),
+        '/contact': (context) => const ContactScreen(),
+        '/signin': (context) => const SignInScreen(),
+        '/signup': (context) => const SignUpScreen(),
+      },
     );
   }
 }
