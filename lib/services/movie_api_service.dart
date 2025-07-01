@@ -29,7 +29,7 @@ class MovieApiService {
 
   Future<String?> fetchTrailerKey(int movieId) async {
     final url = Uri.parse(
-      'https://api.themoviedb.org/3/movie/$movieId/videos?api_key=YOUR_API_KEY&language=en-US',
+      'https://api.themoviedb.org/3/movie/$movieId/videos?api_key=c186762f14592e810da1278859304e21&language=en-US',
     );
 
     final response = await http.get(url);
