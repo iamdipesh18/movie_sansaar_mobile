@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:movie_sansaar_mobile/providers/theme_provider.dart';
 import 'package:movie_sansaar_mobile/screens/search_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/movie_provider.dart';
@@ -29,6 +30,14 @@ class _TopRatedScreen extends State<TopRatedScreen> {
       appBar: AppBar(
         title: const Text('Top Rated Movies'),
         actions: [
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, _) {
+              return Switch(
+                value: themeProvider.isDarkMode,
+                onChanged: themeProvider.toggleTheme,
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {

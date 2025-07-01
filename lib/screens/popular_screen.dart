@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:movie_sansaar_mobile/providers/theme_provider.dart';
 import 'package:movie_sansaar_mobile/screens/now_playing_screen.dart';
 import 'package:movie_sansaar_mobile/screens/search_screen.dart';
 import 'package:provider/provider.dart';
@@ -29,6 +30,14 @@ class _PopularScreenState extends State<PopularScreen> {
       appBar: AppBar(
         title: const Text('Popular Movies'),
         actions: [
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, _) {
+              return Switch(
+                value: themeProvider.isDarkMode,
+                onChanged: themeProvider.toggleTheme,
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:movie_sansaar_mobile/config/api_endpoint.dart';
+import 'package:movie_sansaar_mobile/providers/theme_provider.dart';
 import 'package:movie_sansaar_mobile/screens/movie_details_screen.dart';
 import 'package:movie_sansaar_mobile/screens/search_screen.dart';
 import 'package:provider/provider.dart';
@@ -34,6 +35,14 @@ class _NowPlayingScreen extends State<NowPlayingScreen> {
         title: const Text('Now Playing'),
         backgroundColor: Colors.redAccent,
         actions: [
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, _) {
+              return Switch(
+                value: themeProvider.isDarkMode,
+                onChanged: themeProvider.toggleTheme,
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
