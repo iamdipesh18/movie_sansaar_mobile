@@ -26,4 +26,27 @@ class MovieApiService {
       throw Exception('Failed to load movies');
     }
   }
+
+  Future<String?> fetchTrailerKey(int movieId) async {
+    final url = Uri.parse(
+      'https://api.themoviedb.org/3/movie/$movieId/videos?api_key=YOUR_API_KEY&language=en-US',
+    );
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final videos = data['results'] as List;
+
+      // Get the first YouTube trailer
+      final trailer = videos.firstWhere(
+        (video) => video['site'] == 'YouTube' && video['type'] == 'Trailer',
+        orElse: () => null,
+      );
+
+      return trailer != null ? trailer['key'] : null;
+    } else {
+      throw Exception('Failed to fetch trailer');
+    }
+  }
 }
