@@ -1,68 +1,57 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-
+import 'package:movie_sansaar_mobile/screens/trailer_player_screen.dart';
 import '../models/movie.dart';
 import '../services/movie_api_service.dart';
-import '../config/api_endpoint.dart';
 
-class MovieDetailsScreen extends StatefulWidget {
+class MovieDetailsScreen extends StatelessWidget {
   final Movie movie;
+  final MovieApiService _movieApiService = MovieApiService();
 
-  const MovieDetailsScreen({super.key, required this.movie});
+  MovieDetailsScreen({super.key, required this.movie});
 
-  @override
-  State<MovieDetailsScreen> createState() => _MovieDetailsScreenState();
-}
-
-class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
-  String? _trailerKey;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadTrailer();
-  }
-
-  Future<void> _loadTrailer() async {
-    final service = MovieApiService();
-    final key = await service.fetchTrailerKey(widget.movie.id);
-    setState(() {
-      _trailerKey = key;
-    });
-  }
-
-  Future<void> _playTrailer() async {
-    if (_trailerKey != null) {
-      final url = Uri.parse('https://www.youtube.com/watch?v=$_trailerKey');
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not launch trailer')),
+  void _playTrailer(BuildContext context) async {
+    try {
+      final key = await _movieApiService.fetchTrailerKey(movie.id);
+      if (key != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => TrailerPlayerScreen(
+              trailerKey: key,
+              movieTitle: movie.title,
+              posterUrl: 'https://image.tmdb.org/t/p/w500${movie.posterPath}',
+            ),
+          ),
         );
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Trailer not available')));
       }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error fetching trailer: $e')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final movie = widget.movie;
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(movie.title),
-        backgroundColor: Colors.redAccent,
-      ),
+      appBar: AppBar(title: Text(movie.title)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
-              child: Image.network(
-                '${ApiEndpoints.imageBaseUrl}${movie.posterPath}',
-                height: 300,
-                fit: BoxFit.cover,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  'https://image.tmdb.org/t/p/w500${movie.posterPath}',
+                  height: 300,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -75,24 +64,30 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
             const SizedBox(height: 8),
             Text('Rating: ${movie.voteAverage} ⭐'),
             const SizedBox(height: 16),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.play_circle_fill),
+              label: const Text('Watch Trailer'),
+              onPressed: () => _playTrailer(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                textStyle: const TextStyle(fontSize: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             const Text(
               'Overview',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Text(movie.overview),
-            const SizedBox(height: 24),
-            if (_trailerKey != null)
-              Center(
-                child: ElevatedButton.icon(
-                  onPressed: _playTrailer,
-                  icon: const Icon(Icons.play_arrow),
-                  label: const Text('Watch Trailer'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
-                  ),
-                ),
-              ),
           ],
         ),
       ),

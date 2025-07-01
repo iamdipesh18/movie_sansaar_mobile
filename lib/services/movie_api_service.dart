@@ -38,7 +38,6 @@ class MovieApiService {
       final data = json.decode(response.body);
       final videos = data['results'] as List;
 
-      // Get the first YouTube trailer
       final trailer = videos.firstWhere(
         (video) => video['site'] == 'YouTube' && video['type'] == 'Trailer',
         orElse: () => null,
