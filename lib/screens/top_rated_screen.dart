@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:movie_sansaar_mobile/providers/theme_provider.dart';
-import 'package:movie_sansaar_mobile/screens/search_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/movie_provider.dart';
 import '../widgets/movie_card.dart';
@@ -16,6 +14,7 @@ class _TopRatedScreen extends State<TopRatedScreen> {
   @override
   void initState() {
     super.initState();
+    // Fetch top rated movies once the widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<MovieProvider>(context, listen: false).fetchTopRatedMovies();
     });
@@ -24,39 +23,16 @@ class _TopRatedScreen extends State<TopRatedScreen> {
   @override
   Widget build(BuildContext context) {
     final movieProvider = Provider.of<MovieProvider>(context);
-    final movies = movieProvider.popularMovies;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Top Rated Movies'),
-        actions: [
-          Consumer<ThemeProvider>(
-            builder: (context, themeProvider, _) {
-              return Switch(
-                value: themeProvider.isDarkMode,
-                onChanged: themeProvider.toggleTheme,
-              );
+    return movieProvider.isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : ListView.builder(
+            padding: const EdgeInsets.all(8.0),
+            itemCount: movieProvider.topRatedMovies.length,
+            itemBuilder: (context, index) {
+              final movie = movieProvider.topRatedMovies[index];
+              return MovieCard(movie: movie);
             },
-          ),
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SearchScreen()),
-              );
-            },
-          ),
-        ],
-      ),
-      body: movieProvider.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: movies.length,
-              itemBuilder: (context, index) {
-                return MovieCard(movie: movies[index]);
-              },
-            ),
-    );
+          );
   }
 }
