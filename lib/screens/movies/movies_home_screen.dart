@@ -1,28 +1,28 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:movie_sansaar_mobile/widgets/drawer.dart';
-import 'package:movie_sansaar_mobile/screens/series/airing_today_series_screen.dart';
-import 'package:movie_sansaar_mobile/screens/series/popular_series_screen.dart';
-import 'package:movie_sansaar_mobile/screens/series/top_rated_series_screen.dart';
-import 'series_search_screen.dart';
+import 'now_playing_screen.dart';
+import 'popular_screen.dart';
+import 'top_rated_screen.dart';
+import '../search_screen.dart';
 
-class SeriesMainScreen extends StatefulWidget {
-  const SeriesMainScreen({super.key});
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
   @override
-  State<SeriesMainScreen> createState() => _SeriesMainScreenState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _SeriesMainScreenState extends State<SeriesMainScreen> {
+class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = const [
-    AiringTodaySeriesScreen(),
-    PopularSeriesScreen(),
-    TopRatedSeriesScreen(),
+    NowPlayingScreen(),
+    PopularScreen(),
+    TopRatedScreen(),
   ];
 
-  final List<String> _labels = const ['Airing Today', 'Popular', 'Top Rated'];
+  final List<String> _labels = const ['Now Playing', 'Popular', 'Top Rated'];
 
   void _onTap(int index) {
     setState(() => _selectedIndex = index);
@@ -31,7 +31,7 @@ class _SeriesMainScreenState extends State<SeriesMainScreen> {
   void _onSearchPressed() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const SeriesSearchScreen()),
+      MaterialPageRoute(builder: (_) => const SearchScreen()),
     );
   }
 
@@ -44,14 +44,15 @@ class _SeriesMainScreenState extends State<SeriesMainScreen> {
       drawerScrimColor: Colors.black.withOpacity(0.6),
       drawer: const AppDrawer(),
 
+      // // Modern-style centered AppBar title
       // appBar: AppBar(
       //   centerTitle: true,
       //   title: Hero(
-      //     tag: 'series',
+      //     tag: 'movies',
       //     child: Material(
       //       color: Colors.transparent,
       //       child: Text(
-      //         'Series',
+      //         'Movies',
       //         style: theme.textTheme.titleLarge?.copyWith(
       //           color: theme.appBarTheme.foregroundColor,
       //           fontWeight: FontWeight.bold,
@@ -69,9 +70,10 @@ class _SeriesMainScreenState extends State<SeriesMainScreen> {
       //   elevation: 0,
       // ),
 
+      // Section Selector (Now Playing, Popular, Top Rated)
       body: Column(
         children: [
-          // Top selector with blur background
+          // Blurred background selector bar
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
@@ -125,13 +127,13 @@ class _SeriesMainScreenState extends State<SeriesMainScreen> {
             ),
           ),
 
-          // Animated screen switching
+          // Animated screen transition
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 350),
               switchInCurve: Curves.easeIn,
               switchOutCurve: Curves.easeOut,
-              transitionBuilder: (child, animation) {
+              transitionBuilder: (Widget child, Animation<double> animation) {
                 final offsetAnimation = Tween<Offset>(
                   begin: const Offset(0.0, 0.1),
                   end: Offset.zero,

@@ -1,9 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:movie_sansaar_mobile/config/api_endpoint.dart';
-import '../models/movie.dart';
-import '../widgets/movie_card.dart';
+import 'package:movie_sansaar_mobile/models/search_result_model.dart';
+import 'package:movie_sansaar_mobile/services/search_services.dart';
+import 'package:movie_sansaar_mobile/widgets/search_result_card.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -13,34 +11,39 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  final TextEditingController _controller = TextEditingController();
-  List<Movie> _results = [];
+  final _controller = TextEditingController();
+  final _searchService = SearchService();
+
+  List<SearchResult> _results = [];
   bool _isLoading = false;
+  String _query = '';
 
-  Future<void> _search(String query) async {
-    if (query.trim().isEmpty) return;
-
+  /// Called when the user submits a search query
+  /// Fetches combined movie and series results asynchronously
+  void _onSearch(String query) async {
     setState(() {
-      _isLoading = true;
-      _results = [];
+      _query = query.trim();
+      _isLoading = true; // Show loading spinner
     });
 
-    final url = ApiEndpoints.searchMovies(query);
-    final response = await http.get(Uri.parse(url));
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final List results = data['results'];
+    try {
+      final results = await _searchService.searchAll(query);
       setState(() {
-        _results = results.map((json) => Movie.fromJson(json)).toList();
-        _isLoading = false;
+        _results = results; // Update UI with fetched results
       });
-    } else {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to load search results')),
-      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Search failed: $e')));
+    } finally {
+      setState(() => _isLoading = false); // Hide loading spinner
     }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose(); // Clean up controller when screen disposed
+    super.dispose();
   }
 
   @override
@@ -51,24 +54,39 @@ class _SearchScreenState extends State<SearchScreen> {
           controller: _controller,
           autofocus: true,
           decoration: const InputDecoration(
-            hintText: 'Search movies...',
+            hintText: 'Search movies or series...',
             border: InputBorder.none,
           ),
-          onSubmitted: _search,
+          onSubmitted: _onSearch, // Trigger search on submit
           textInputAction: TextInputAction.search,
         ),
-        backgroundColor: Colors.redAccent,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _results.isEmpty
+          ? const Center(child: CircularProgressIndicator()) // Loading spinner
+          : _query.isEmpty
           ? const Center(
-              child: Text('No results yet. Try searching something.'),
-            )
-          : ListView.builder(
-              itemCount: _results.length,
-              itemBuilder: (context, index) =>
-                  MovieCard(movie: _results[index]),
+              child: Text('Start typing to search...'),
+            ) // Prompt to type
+          : _results.isEmpty
+          ? const Center(child: Text('No results found.')) // No matches found
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              // Display results in a grid with 2 columns
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2, // 2 columns
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio:
+                      0.65, // Adjust card aspect ratio (width/height)
+                ),
+                itemCount: _results.length,
+                itemBuilder: (context, index) {
+                  final result = _results[index];
+                  // Using your SearchResultCard widget for each item
+                  return SearchResultCard(result: result);
+                },
+              ),
             ),
     );
   }

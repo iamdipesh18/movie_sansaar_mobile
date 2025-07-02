@@ -1,37 +1,68 @@
 import 'package:flutter/foundation.dart';
 import '../models/series.dart';
+import '../models/season_and_episode.dart';
+import '../models/genre.dart'; // Import Genre model
 import '../services/series_api_service.dart';
 
+/// Provider managing series lists, genres, searches, and details
 class SeriesProvider extends ChangeNotifier {
   final SeriesApiService _apiService = SeriesApiService();
+
+  // ========== STATE VARIABLES ==========
 
   List<Series> _airingToday = [];
   List<Series> _popular = [];
   List<Series> _topRated = [];
+
   List<Series> _searchResults = [];
+
+  Series? _selectedSeries;
+
+  Map<int, Genre> _genreMap = {}; // Genre cache for ID to Genre object
 
   bool _isLoading = false;
   String? _errorMessage;
 
-  // Public getters
+  // ========== GETTERS ==========
+
   List<Series> get airingToday => _airingToday;
   List<Series> get popular => _popular;
   List<Series> get topRated => _topRated;
   List<Series> get searchResults => _searchResults;
-
+  Series? get selectedSeries => _selectedSeries;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  // Fetch all categories at once (optional)
+  Map<int, Genre> get genreMap => _genreMap;
+
+  // ========== FETCH GENRES ==========
+
+  /// Fetches and caches the genre list from TMDB
+  Future<void> fetchGenres() async {
+    try {
+      final genresList = await _apiService.fetchGenres();
+      _genreMap = {for (var genre in genresList) genre.id: genre};
+    } catch (e) {
+      _errorMessage = 'Failed to load genres: $e';
+      notifyListeners();
+    }
+  }
+
+  // ========== FETCH ALL SERIES WITH GENRES ==========
+
+  /// Fetch all series lists at once, fetching genres first
   Future<void> fetchAllSeries() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      _airingToday = await _apiService.fetchAiringToday();
-      _popular = await _apiService.fetchPopular();
-      _topRated = await _apiService.fetchTopRated();
+      await fetchGenres();
+
+      // Pass genreMap to get full genre info for series lists
+      _airingToday = await _apiService.fetchAiringToday(_genreMap);
+      _popular = await _apiService.fetchPopular(_genreMap);
+      _topRated = await _apiService.fetchTopRated(_genreMap);
     } catch (e) {
       _errorMessage = 'Failed to load series: $e';
     } finally {
@@ -40,13 +71,18 @@ class SeriesProvider extends ChangeNotifier {
     }
   }
 
+  // ========== INDIVIDUAL FETCHES ==========
+
   Future<void> fetchAiringToday() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      _airingToday = await _apiService.fetchAiringToday();
+      // Ensure genres are loaded before fetching series
+      if (_genreMap.isEmpty) await fetchGenres();
+
+      _airingToday = await _apiService.fetchAiringToday(_genreMap);
     } catch (e) {
       _errorMessage = 'Failed to load airing today series: $e';
     } finally {
@@ -61,7 +97,9 @@ class SeriesProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _popular = await _apiService.fetchPopular();
+      if (_genreMap.isEmpty) await fetchGenres();
+
+      _popular = await _apiService.fetchPopular(_genreMap);
     } catch (e) {
       _errorMessage = 'Failed to load popular series: $e';
     } finally {
@@ -76,7 +114,9 @@ class SeriesProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _topRated = await _apiService.fetchTopRated();
+      if (_genreMap.isEmpty) await fetchGenres();
+
+      _topRated = await _apiService.fetchTopRated(_genreMap);
     } catch (e) {
       _errorMessage = 'Failed to load top rated series: $e';
     } finally {
@@ -85,7 +125,8 @@ class SeriesProvider extends ChangeNotifier {
     }
   }
 
-  /// Search series by query
+  // ========== SEARCH ==========
+
   Future<void> searchSeries(String query) async {
     if (query.isEmpty) {
       _searchResults = [];
@@ -109,8 +150,42 @@ class SeriesProvider extends ChangeNotifier {
   }
 
   void clearSearchResults() {
-  _searchResults = [];
-  notifyListeners();
-}
+    _searchResults = [];
+    notifyListeners();
+  }
 
+  // ========== SERIES DETAILS ==========
+
+  Future<void> fetchFullSeriesDetails(int seriesId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _selectedSeries = await _apiService.fetchFullDetails(seriesId);
+    } catch (e) {
+      _errorMessage = 'Failed to load series details: $e';
+      _selectedSeries = null;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void clearSelectedSeries() {
+    _selectedSeries = null;
+    notifyListeners();
+  }
+
+  // ========== EPISODES PER SEASON ==========
+
+  Future<List<Episode>> fetchEpisodes(int seriesId, int seasonNumber) async {
+    try {
+      return await _apiService.fetchEpisodes(seriesId, seasonNumber);
+    } catch (e) {
+      _errorMessage = 'Failed to load episodes: $e';
+      notifyListeners();
+      return [];
+    }
+  }
 }

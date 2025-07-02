@@ -62,14 +62,14 @@ class _SeriesSearchScreenState extends State<SeriesSearchScreen> {
                         final series = searchResults[index];
                         return SeriesCard(
                           series: series,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => SeriesDetailsScreen(seriesId: series.id),
-                              ),
-                            );
-                          },
+                          // onTap: () {
+                          //   Navigator.push(
+                          //     context,
+                          //     MaterialPageRoute(
+                          //       builder: (_) => SeriesDetailsScreen(seriesId: series.id),
+                          //     ),
+                          //   );
+                          // },
                         );
                       },
                     ),

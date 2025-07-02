@@ -3,8 +3,6 @@ import 'package:movie_sansaar_mobile/providers/series_provider.dart';
 import 'package:movie_sansaar_mobile/widgets/series_card.dart';
 import 'package:provider/provider.dart';
 
-import 'series_details_screen.dart';
-
 class PopularSeriesScreen extends StatefulWidget {
   const PopularSeriesScreen({super.key});
 
@@ -16,14 +14,26 @@ class _PopularSeriesScreenState extends State<PopularSeriesScreen> {
   @override
   void initState() {
     super.initState();
+    // Fetch popular series when the screen is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<SeriesProvider>(context, listen: false).fetchPopular();
     });
   }
 
+  /// Dynamically calculate number of columns based on screen width
+  int _calculateCrossAxisCount(double width) {
+    if (width >= 1200) return 6;
+    if (width >= 1000) return 5;
+    if (width >= 800) return 4;
+    if (width >= 600) return 3;
+    return 2; // For phones and small devices
+  }
+
   @override
   Widget build(BuildContext context) {
     final seriesProvider = Provider.of<SeriesProvider>(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final crossAxisCount = _calculateCrossAxisCount(screenWidth);
 
     if (seriesProvider.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -35,23 +45,21 @@ class _PopularSeriesScreenState extends State<PopularSeriesScreen> {
 
     final popularList = seriesProvider.popular;
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(8.0),
-      itemCount: popularList.length,
-      itemBuilder: (context, index) {
-        final series = popularList[index];
-        return SeriesCard(
-          series: series,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => SeriesDetailsScreen(seriesId: series.id),
-              ),
-            );
-          },
-        );
-      },
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: GridView.builder(
+        itemCount: popularList.length,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+          childAspectRatio: 0.6, // Similar to movie card
+        ),
+        itemBuilder: (context, index) {
+          final series = popularList[index];
+          return SeriesCard(series: series);
+        },
+      ),
     );
   }
 }
