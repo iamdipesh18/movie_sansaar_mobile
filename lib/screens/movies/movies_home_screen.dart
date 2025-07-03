@@ -42,7 +42,7 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       drawerScrimColor: Colors.black.withOpacity(0.6),
-      drawer: const AppDrawer(),
+      drawer: const ModernDrawer(),
 
       // // Modern-style centered AppBar title
       // appBar: AppBar(

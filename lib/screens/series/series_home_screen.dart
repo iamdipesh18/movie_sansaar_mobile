@@ -1,10 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:movie_sansaar_mobile/screens/search_screen.dart';
 import 'package:movie_sansaar_mobile/widgets/drawer.dart';
 import 'package:movie_sansaar_mobile/screens/series/airing_today_series_screen.dart';
 import 'package:movie_sansaar_mobile/screens/series/popular_series_screen.dart';
 import 'package:movie_sansaar_mobile/screens/series/top_rated_series_screen.dart';
-import 'series_search_screen.dart';
 
 class SeriesMainScreen extends StatefulWidget {
   const SeriesMainScreen({super.key});
@@ -31,7 +31,7 @@ class _SeriesMainScreenState extends State<SeriesMainScreen> {
   void _onSearchPressed() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const SeriesSearchScreen()),
+      MaterialPageRoute(builder: (_) => const SearchScreen()),
     );
   }
 
@@ -42,7 +42,7 @@ class _SeriesMainScreenState extends State<SeriesMainScreen> {
 
     return Scaffold(
       drawerScrimColor: Colors.black.withOpacity(0.6),
-      drawer: const AppDrawer(),
+      drawer: const ModernDrawer(),
 
       // appBar: AppBar(
       //   centerTitle: true,
@@ -68,7 +68,6 @@ class _SeriesMainScreenState extends State<SeriesMainScreen> {
       //   ],
       //   elevation: 0,
       // ),
-
       body: Column(
         children: [
           // Top selector with blur background

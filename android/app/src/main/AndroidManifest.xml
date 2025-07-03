@@ -2,6 +2,9 @@
 
     <!-- Add this permission to allow internet access -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Add this permission to allow voice access -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+
 
     <application
         android:label="movie_sansaar_mobile"
@@ -14,6 +17,7 @@
             android:launchMode="singleTop"
             android:taskAffinity=""
             android:theme="@style/LaunchTheme"
+            android:usesCleartextTraffic="true"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">

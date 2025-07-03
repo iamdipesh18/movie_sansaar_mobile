@@ -2,10 +2,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+// import 'package:movie_sansaar_mobile/screens/movie_stream_screen.dart';
 import '../../models/movie.dart';
 import '../../services/movie_api_service.dart';
 import '../trailer_player_screen.dart';
-import '../movie_stream_screen.dart';
 
 class MovieDetailsScreen extends StatefulWidget {
   final Movie movie; // Initial lightweight movie object (from list screen)
@@ -55,17 +55,31 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
       ),
     );
   }
+//   void _navigateToMovieStream() {
+//   if (_movie == null || _movie!.streamingUrl == null || _movie!.streamingUrl!.isEmpty) return;
+
+//   Navigator.of(context).push(
+//     MaterialPageRoute(
+//       builder: (_) => MovieStreamScreen(
+//         videoUrl: _movie!.streamingUrl!,
+//         title: _movie!.title,
+//       ),
+//     ),
+//   );
+// }
 
   // Navigate to movie stream screen
-  void _navigateToMovieStream() {
-    if (_movie == null) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) =>
-            MovieStreamScreen(movieId: _movie!.id, title: _movie!.title),
-      ),
-    );
-  }
+  // void _navigateToMovieStream() {
+  //   if (_movie == null) return;
+  //   Navigator.of(context).push(
+  //     MaterialPageRoute(
+  //       builder: (_) => MovieStreamScreen(
+  //         tmdbId: _movie!.id.toString(),
+  //         imdbId: _movie!.imdbId,
+  //       ),
+  //     ),
+  //   );
+  // }
 
   /// Floating back button placed over the header
   Widget _buildBackButton() {
@@ -165,12 +179,12 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                     background: Colors.redAccent,
                   ),
                   const SizedBox(width: 12),
-                  _buildGlassButton(
-                    icon: Icons.ondemand_video,
-                    label: 'Watch Movie',
-                    onTap: _navigateToMovieStream,
-                    background: Colors.green,
-                  ),
+                  // _buildGlassButton(
+                  //   icon: Icons.ondemand_video,
+                  //   label: 'Watch Movie',
+                  //   onTap: _navigateToMovieStream,
+                  //   background: Colors.green,
+                  // ),
                 ],
               ),
             ],

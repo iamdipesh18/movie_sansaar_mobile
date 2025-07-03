@@ -39,6 +39,7 @@ class Movie {
   final double voteAverage;
   final String releaseDate;
 
+  final String? streamingUrl;
   // Full detail info (available after fetching details)
   final int runtime;
   final String status;
@@ -49,6 +50,9 @@ class Movie {
   final int revenue;
   final String originalLanguage;
   final String tagline;
+
+  // New: imdbId is now needed for streaming APIs
+  final String imdbId;
 
   // Related info like videos and cast (usually in full detail)
   final List<Map<String, dynamic>> videos;
@@ -71,8 +75,10 @@ class Movie {
     required this.revenue,
     required this.originalLanguage,
     required this.tagline,
+    required this.imdbId,
     required this.videos,
     required this.cast,
+    required this.streamingUrl,
   });
 
   /// Factory constructor to create a lightweight `Movie` instance,
@@ -103,8 +109,10 @@ class Movie {
       revenue: 0,
       originalLanguage: '',
       tagline: '',
+      imdbId: '', // Not available in minimal
       videos: [],
       cast: [],
+      streamingUrl: '',
     );
   }
 
@@ -148,6 +156,7 @@ class Movie {
       revenue: json['revenue'] ?? 0,
       originalLanguage: json['original_language'] ?? '',
       tagline: json['tagline'] ?? '',
+      imdbId: json['imdb_id'] ?? '', // New addition for streaming
       videos:
           ((json['videos']?['results']) as List<dynamic>?)
               ?.map((v) => v as Map<String, dynamic>)
@@ -158,6 +167,52 @@ class Movie {
               ?.map((c) => c as Map<String, dynamic>)
               .toList() ??
           [],
+      streamingUrl: '',
+    );
+  }
+  Movie copyWith({
+    int? id,
+    String? title,
+    String? overview,
+    String? posterPath,
+    String? backdropPath,
+    double? voteAverage,
+    String? releaseDate,
+    String? streamingUrl,
+    int? runtime,
+    String? status,
+    List<String>? genres,
+    List<String>? spokenLanguages,
+    List<String>? productionCompanies,
+    int? budget,
+    int? revenue,
+    String? originalLanguage,
+    String? tagline,
+    String? imdbId,
+    List<Map<String, dynamic>>? videos,
+    List<Map<String, dynamic>>? cast,
+  }) {
+    return Movie(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      overview: overview ?? this.overview,
+      posterPath: posterPath ?? this.posterPath,
+      backdropPath: backdropPath ?? this.backdropPath,
+      voteAverage: voteAverage ?? this.voteAverage,
+      releaseDate: releaseDate ?? this.releaseDate,
+      streamingUrl: streamingUrl ?? this.streamingUrl,
+      runtime: runtime ?? this.runtime,
+      status: status ?? this.status,
+      genres: genres ?? this.genres,
+      spokenLanguages: spokenLanguages ?? this.spokenLanguages,
+      productionCompanies: productionCompanies ?? this.productionCompanies,
+      budget: budget ?? this.budget,
+      revenue: revenue ?? this.revenue,
+      originalLanguage: originalLanguage ?? this.originalLanguage,
+      tagline: tagline ?? this.tagline,
+      imdbId: imdbId ?? this.imdbId,
+      videos: videos ?? this.videos,
+      cast: cast ?? this.cast,
     );
   }
 }
