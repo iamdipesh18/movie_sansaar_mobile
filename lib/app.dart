@@ -40,7 +40,7 @@ class App extends StatelessWidget {
               foregroundColor: Colors.white,
             ),
           ),
-          home: const HomePage(),
+          home: const MoviesHomeScreen(),
         );
       },
     );

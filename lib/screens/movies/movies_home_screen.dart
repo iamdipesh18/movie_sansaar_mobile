@@ -1,19 +1,26 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:movie_sansaar_mobile/screens/search_screen.dart';
 import 'package:movie_sansaar_mobile/widgets/drawer.dart';
 import 'now_playing_screen.dart';
 import 'popular_screen.dart';
 import 'top_rated_screen.dart';
-import '../search_screen.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+typedef PageChangedCallback = void Function(int index);
+typedef JumpToPageCallback = void Function(int index);
+
+class MoviesHomeScreen extends StatefulWidget {
+  final PageChangedCallback? onInnerPageChanged;
+  final JumpToPageCallback? jumpToPage;
+
+  const MoviesHomeScreen({super.key, this.onInnerPageChanged, this.jumpToPage});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<MoviesHomeScreen> createState() => _MoviesHomeScreenState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _MoviesHomeScreenState extends State<MoviesHomeScreen> {
+  late PageController _pageController;
   int _selectedIndex = 0;
 
   final List<Widget> _screens = const [
@@ -24,10 +31,39 @@ class _HomePageState extends State<HomePage> {
 
   final List<String> _labels = const ['Now Playing', 'Popular', 'Top Rated'];
 
-  void _onTap(int index) {
-    setState(() => _selectedIndex = index);
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+
+    // Listen for jumpToPage requests from HomeScreen (optional)
+    widget.jumpToPage?.call(_selectedIndex);
   }
 
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  // Tap on tab labels
+  void _onTap(int index) {
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  // Swipe page change
+  void _onPageChanged(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    widget.onInnerPageChanged?.call(index);
+  }
+
+  // Search button handler
   void _onSearchPressed() {
     Navigator.push(
       context,
@@ -44,36 +80,9 @@ class _HomePageState extends State<HomePage> {
       drawerScrimColor: Colors.black.withOpacity(0.6),
       drawer: const ModernDrawer(),
 
-      // // Modern-style centered AppBar title
-      // appBar: AppBar(
-      //   centerTitle: true,
-      //   title: Hero(
-      //     tag: 'movies',
-      //     child: Material(
-      //       color: Colors.transparent,
-      //       child: Text(
-      //         'Movies',
-      //         style: theme.textTheme.titleLarge?.copyWith(
-      //           color: theme.appBarTheme.foregroundColor,
-      //           fontWeight: FontWeight.bold,
-      //         ),
-      //       ),
-      //     ),
-      //   ),
-      //   actions: [
-      //     IconButton(
-      //       icon: const Icon(Icons.search),
-      //       onPressed: _onSearchPressed,
-      //       tooltip: 'Search',
-      //     ),
-      //   ],
-      //   elevation: 0,
-      // ),
-
-      // Section Selector (Now Playing, Popular, Top Rated)
       body: Column(
         children: [
-          // Blurred background selector bar
+          // Blurred tab selector bar with ripple + hover effect
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
@@ -91,30 +100,40 @@ class _HomePageState extends State<HomePage> {
                   children: List.generate(_labels.length, (index) {
                     final isSelected = _selectedIndex == index;
                     return Expanded(
-                      child: GestureDetector(
-                        onTap: () => _onTap(index),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 250),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 12,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () => _onTap(index),
+                          hoverColor: theme.colorScheme.primary.withOpacity(
+                            0.2,
                           ),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? theme.colorScheme.primary.withOpacity(0.8)
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(20),
+                          splashColor: theme.colorScheme.primary.withOpacity(
+                            0.3,
                           ),
-                          child: Center(
-                            child: Text(
-                              _labels[index],
-                              style: TextStyle(
-                                color: isSelected
-                                    ? Colors.white
-                                    : theme.textTheme.bodyMedium?.color,
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 10,
+                              horizontal: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? theme.colorScheme.primary.withOpacity(0.8)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Center(
+                              child: Text(
+                                _labels[index],
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : theme.textTheme.bodyMedium?.color,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
                               ),
                             ),
                           ),
@@ -127,24 +146,11 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
 
-          // Animated screen transition
           Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 350),
-              switchInCurve: Curves.easeIn,
-              switchOutCurve: Curves.easeOut,
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                final offsetAnimation = Tween<Offset>(
-                  begin: const Offset(0.0, 0.1),
-                  end: Offset.zero,
-                ).animate(animation);
-                return SlideTransition(
-                  position: offsetAnimation,
-                  child: FadeTransition(opacity: animation, child: child),
-                );
-              },
-              key: ValueKey<int>(_selectedIndex),
-              child: _screens[_selectedIndex],
+            child: PageView(
+              controller: _pageController,
+              onPageChanged: _onPageChanged,
+              children: _screens,
             ),
           ),
         ],

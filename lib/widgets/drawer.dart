@@ -169,13 +169,13 @@ class ModernDrawer extends StatelessWidget {
                                 ),
                                 title: Text(
                                   isDark
-                                      ? 'Switch to Light Mode'
-                                      : 'Switch to Dark Mode',
+                                      ? 'Light Mode'
+                                      : 'Dark Mode',
                                   style: TextStyle(
                                     color: isDark
                                         ? Colors.white
                                         : Colors.black87,
-                                    fontWeight: FontWeight.w600,
+                                    // fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 trailing: Switch(
