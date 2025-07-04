@@ -7,19 +7,17 @@ import 'popular_series_screen.dart';
 import 'top_rated_series_screen.dart';
 
 typedef PageChangedCallback = void Function(int index);
-typedef JumpToPageCallback = void Function(int index);
 
 class SeriesMainScreen extends StatefulWidget {
   final PageChangedCallback? onInnerPageChanged;
-  final JumpToPageCallback? jumpToPage;
 
-  const SeriesMainScreen({super.key, this.onInnerPageChanged, this.jumpToPage});
+  const SeriesMainScreen({super.key, this.onInnerPageChanged});
 
   @override
-  State<SeriesMainScreen> createState() => _SeriesMainScreenState();
+  State<SeriesMainScreen> createState() => SeriesMainScreenState();
 }
 
-class _SeriesMainScreenState extends State<SeriesMainScreen> {
+class SeriesMainScreenState extends State<SeriesMainScreen> {
   late PageController _pageController;
   int _selectedIndex = 0;
 
@@ -35,9 +33,6 @@ class _SeriesMainScreenState extends State<SeriesMainScreen> {
   void initState() {
     super.initState();
     _pageController = PageController();
-
-    // Listen for jumpToPage requests from HomeScreen (optional)
-    widget.jumpToPage?.call(_selectedIndex);
   }
 
   @override
@@ -46,7 +41,6 @@ class _SeriesMainScreenState extends State<SeriesMainScreen> {
     super.dispose();
   }
 
-  // Tap on tab label
   void _onTap(int index) {
     _pageController.animateToPage(
       index,
@@ -55,7 +49,6 @@ class _SeriesMainScreenState extends State<SeriesMainScreen> {
     );
   }
 
-  // Swipe page change
   void _onPageChanged(int index) {
     setState(() {
       _selectedIndex = index;
@@ -63,12 +56,12 @@ class _SeriesMainScreenState extends State<SeriesMainScreen> {
     widget.onInnerPageChanged?.call(index);
   }
 
-  // Search button handler
-  void _onSearchPressed() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const SearchScreen()),
-    );
+  void jumpToPage(int index) {
+    _pageController.jumpToPage(index);
+    setState(() {
+      _selectedIndex = index;
+    });
+    widget.onInnerPageChanged?.call(index);
   }
 
   @override
@@ -79,10 +72,8 @@ class _SeriesMainScreenState extends State<SeriesMainScreen> {
     return Scaffold(
       drawerScrimColor: Colors.black.withOpacity(0.6),
       drawer: const ModernDrawer(),
-
       body: Column(
         children: [
-          // Blurred tab selector bar with ripple + hover effect
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
@@ -105,18 +96,12 @@ class _SeriesMainScreenState extends State<SeriesMainScreen> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(20),
                           onTap: () => _onTap(index),
-                          hoverColor: theme.colorScheme.primary.withOpacity(
-                            0.2,
-                          ),
-                          splashColor: theme.colorScheme.primary.withOpacity(
-                            0.3,
-                          ),
+                          hoverColor: theme.colorScheme.primary.withOpacity(0.2),
+                          splashColor: theme.colorScheme.primary.withOpacity(0.3),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 250),
                             padding: const EdgeInsets.symmetric(
-                              vertical: 10,
-                              horizontal: 12,
-                            ),
+                                vertical: 10, horizontal: 12),
                             decoration: BoxDecoration(
                               color: isSelected
                                   ? theme.colorScheme.primary.withOpacity(0.8)
@@ -130,9 +115,8 @@ class _SeriesMainScreenState extends State<SeriesMainScreen> {
                                   color: isSelected
                                       ? Colors.white
                                       : theme.textTheme.bodyMedium?.color,
-                                  fontWeight: isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
+                                  fontWeight:
+                                      isSelected ? FontWeight.bold : FontWeight.normal,
                                 ),
                               ),
                             ),
@@ -145,7 +129,6 @@ class _SeriesMainScreenState extends State<SeriesMainScreen> {
               ),
             ),
           ),
-
           Expanded(
             child: PageView(
               controller: _pageController,

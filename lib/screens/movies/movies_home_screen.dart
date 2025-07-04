@@ -7,19 +7,17 @@ import 'popular_screen.dart';
 import 'top_rated_screen.dart';
 
 typedef PageChangedCallback = void Function(int index);
-typedef JumpToPageCallback = void Function(int index);
 
 class MoviesHomeScreen extends StatefulWidget {
   final PageChangedCallback? onInnerPageChanged;
-  final JumpToPageCallback? jumpToPage;
 
-  const MoviesHomeScreen({super.key, this.onInnerPageChanged, this.jumpToPage});
+  const MoviesHomeScreen({super.key, this.onInnerPageChanged});
 
   @override
-  State<MoviesHomeScreen> createState() => _MoviesHomeScreenState();
+  State<MoviesHomeScreen> createState() => MoviesHomeScreenState();
 }
 
-class _MoviesHomeScreenState extends State<MoviesHomeScreen> {
+class MoviesHomeScreenState extends State<MoviesHomeScreen> {
   late PageController _pageController;
   int _selectedIndex = 0;
 
@@ -35,9 +33,6 @@ class _MoviesHomeScreenState extends State<MoviesHomeScreen> {
   void initState() {
     super.initState();
     _pageController = PageController();
-
-    // Listen for jumpToPage requests from HomeScreen (optional)
-    widget.jumpToPage?.call(_selectedIndex);
   }
 
   @override
@@ -46,7 +41,6 @@ class _MoviesHomeScreenState extends State<MoviesHomeScreen> {
     super.dispose();
   }
 
-  // Tap on tab labels
   void _onTap(int index) {
     _pageController.animateToPage(
       index,
@@ -55,7 +49,6 @@ class _MoviesHomeScreenState extends State<MoviesHomeScreen> {
     );
   }
 
-  // Swipe page change
   void _onPageChanged(int index) {
     setState(() {
       _selectedIndex = index;
@@ -63,12 +56,12 @@ class _MoviesHomeScreenState extends State<MoviesHomeScreen> {
     widget.onInnerPageChanged?.call(index);
   }
 
-  // Search button handler
-  void _onSearchPressed() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const SearchScreen()),
-    );
+  void jumpToPage(int index) {
+    _pageController.jumpToPage(index);
+    setState(() {
+      _selectedIndex = index;
+    });
+    widget.onInnerPageChanged?.call(index);
   }
 
   @override
@@ -79,10 +72,8 @@ class _MoviesHomeScreenState extends State<MoviesHomeScreen> {
     return Scaffold(
       drawerScrimColor: Colors.black.withOpacity(0.6),
       drawer: const ModernDrawer(),
-
       body: Column(
         children: [
-          // Blurred tab selector bar with ripple + hover effect
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
@@ -105,18 +96,12 @@ class _MoviesHomeScreenState extends State<MoviesHomeScreen> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(20),
                           onTap: () => _onTap(index),
-                          hoverColor: theme.colorScheme.primary.withOpacity(
-                            0.2,
-                          ),
-                          splashColor: theme.colorScheme.primary.withOpacity(
-                            0.3,
-                          ),
+                          hoverColor: theme.colorScheme.primary.withOpacity(0.2),
+                          splashColor: theme.colorScheme.primary.withOpacity(0.3),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 250),
                             padding: const EdgeInsets.symmetric(
-                              vertical: 10,
-                              horizontal: 12,
-                            ),
+                                vertical: 10, horizontal: 12),
                             decoration: BoxDecoration(
                               color: isSelected
                                   ? theme.colorScheme.primary.withOpacity(0.8)
@@ -130,9 +115,8 @@ class _MoviesHomeScreenState extends State<MoviesHomeScreen> {
                                   color: isSelected
                                       ? Colors.white
                                       : theme.textTheme.bodyMedium?.color,
-                                  fontWeight: isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
+                                  fontWeight:
+                                      isSelected ? FontWeight.bold : FontWeight.normal,
                                 ),
                               ),
                             ),
@@ -145,7 +129,6 @@ class _MoviesHomeScreenState extends State<MoviesHomeScreen> {
               ),
             ),
           ),
-
           Expanded(
             child: PageView(
               controller: _pageController,

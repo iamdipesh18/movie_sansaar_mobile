@@ -1,81 +1,72 @@
 import 'package:flutter/material.dart';
-import 'package:movie_sansaar_mobile/models/content_type.dart';
-import 'package:movie_sansaar_mobile/providers/content_type_provider.dart';
-import 'package:movie_sansaar_mobile/screens/home_screen.dart'; // Your combined movies/series toggle home screen
 import 'package:provider/provider.dart';
-import 'providers/movie_provider.dart';
-import 'providers/theme_provider.dart';
-import 'providers/series_provider.dart';
+
+// Screens
+import 'screens/home_screen.dart';
 import 'screens/contact.dart';
 import 'screens/sign_up.dart';
+import 'screens/sign_in.dart'; // 👈 Add this line
+
+// Models
+import 'models/content_type.dart';
+
+// Providers
+import 'providers/movie_provider.dart';
+import 'providers/series_provider.dart';
+import 'providers/theme_provider.dart';
+import 'providers/content_type_provider.dart';
 
 void main() {
   runApp(
     MultiProvider(
       providers: [
-        // Providing movie-related state management
+        /// 🔌 Dependency Injection for State Management
+
+        // Movie-related logic
         ChangeNotifierProvider(create: (_) => MovieProvider()),
-        // Providing theme management (dark/light mode)
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        // Providing series-related state management
+
+        // Series-related logic
         ChangeNotifierProvider(create: (_) => SeriesProvider()),
-        // Providing Movies-Series related statemanagement
+
+        // Toggle logic between Movies and Series
         ChangeNotifierProvider(create: (_) => ContentTypeProvider()),
 
-
+        // Light/Dark theme logic
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
       child: const MyApp(),
     ),
   );
 }
 
-/// Root widget of the application
+/// 🌐 Root Widget of the Application
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Access the current theme mode from ThemeProvider
+    // 🌓 Access the current theme from ThemeProvider
     final themeProvider = Provider.of<ThemeProvider>(context);
 
-    // return MaterialApp(
-    //   debugShowCheckedModeBanner: false, // Disable debug banner
-    //   themeMode: themeProvider.themeMode, // Switch between light/dark mode
-    //   // Light theme configuration
-    //   theme: ThemeData(
-    //     primarySwatch: Colors.red,
-    //     brightness: Brightness.light,
-    //   ),
-    //   // Dark theme configuration
-    //   darkTheme: ThemeData(
-    //     brightness: Brightness.dark,
-    //     colorScheme: const ColorScheme.dark(primary: Colors.redAccent),
-    //   ),
-
-    //   // Specify initial route explicitly
-    //   initialRoute: '/combined_home',
-
-    //   // Define named routes in the app
-    //   routes: {
-    //     // Main combined home screen with toggle for movies and series
-    //     '/combined_home': (context) => const HomeScreen(),
-
-    //     // Other routes for navigation
-    //     '/contact': (context) => const ContactScreen(),
-    //     '/signup': (context) => const SignupScreen(),
-    //   },
-    // );
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+
+      /// Set Theme Mode from Provider (Light / Dark)
       themeMode: themeProvider.themeMode,
+
+      /// 🌞 Light Theme Definition
       theme: ThemeData(primarySwatch: Colors.red, brightness: Brightness.light),
+
+      /// 🌙 Dark Theme Definition
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         colorScheme: const ColorScheme.dark(primary: Colors.redAccent),
       ),
+
+      /// 🏁 Initial Route
       initialRoute: '/combined_home',
 
-      /// 👇 Replace `routes` with `onGenerateRoute`
+      /// 🗺️ Route Generator for Navigation (with arguments support)
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case '/combined_home':
@@ -84,16 +75,33 @@ class MyApp extends StatelessWidget {
               builder: (_) =>
                   HomeScreen(initialContent: contentType ?? ContentType.movie),
             );
-          case '/contact':
-            return MaterialPageRoute(builder: (_) => const ContactScreen());
-          case '/signup':
-            return MaterialPageRoute(builder: (_) => const SignupScreen());
 
-          // case '/watchable':
-          //   return MaterialPageRoute(
-          //     builder: (_) => const WatchableContentScreen(),
+          case '/contact':
+            return MaterialPageRoute(builder: (_) => const ContactUsScreen());
+
+          case '/signup':
+            return PageRouteBuilder(
+              pageBuilder: (_, __, ___) => const SignUpScreen(),
+              transitionsBuilder: (_, animation, __, child) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+              transitionDuration: const Duration(milliseconds: 400),
+            );
+
+          // Inside your onGenerateRoute:
+          case '/signin':
+            return PageRouteBuilder(
+              pageBuilder: (_, __, ___) => const SignInScreen(),
+              transitionsBuilder: (_, animation, __, child) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+              transitionDuration: const Duration(milliseconds: 400),
+            );
+
+          /// 🔁 Add more routes here if needed...
 
           default:
+            // Fallback for unknown routes
             return MaterialPageRoute(
               builder: (_) => const Scaffold(
                 body: Center(child: Text('404 - Page Not Found')),

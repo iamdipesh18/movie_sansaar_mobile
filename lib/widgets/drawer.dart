@@ -28,9 +28,10 @@ class ModernDrawer extends StatelessWidget {
     final isDark = themeProvider.isDarkMode;
 
     // Gradient colors matching header and drawer background
-    final gradientColors = isDark
-        ? [Colors.black, Colors.grey.shade900]
-        : [Colors.redAccent, Colors.orangeAccent];
+final gradientColors = isDark
+    ? [Colors.black, Colors.grey.shade900]
+    : [const Color(0xFF8973B3), const Color(0xFF8973B3)];
+
 
     return ClipRRect(
       borderRadius: const BorderRadius.only(

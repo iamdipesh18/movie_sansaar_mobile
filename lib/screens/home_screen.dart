@@ -19,32 +19,31 @@ class _HomeScreenState extends State<HomeScreen> {
   late PageController _pageController;
   int _currentIndex = 0;
 
-  // For detecting the current inner page index of Movies or Series (NowPlaying/Popular/TopRated)
   int _movieInnerPageIndex = 0;
   int _seriesInnerPageIndex = 0;
+
+  final GlobalKey<MoviesHomeScreenState> _moviesKey = GlobalKey();
+  final GlobalKey<SeriesMainScreenState> _seriesKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    // Initialize main page index based on initial content type
     _currentIndex = widget.initialContent == ContentType.movie ? 0 : 1;
     _pageController = PageController(initialPage: _currentIndex);
   }
 
   @override
   void dispose() {
-    _pageController.dispose(); // Clean up controller resources
+    _pageController.dispose();
     super.dispose();
   }
 
-  // Called when swiping between Movies and Series top-level pages
   void _onPageChanged(int index) {
     setState(() {
       _currentIndex = index;
     });
   }
 
-  // Called when user toggles Movies/Series using ContentToggle widget
   void _onToggleChanged(ContentType newContent) {
     final newIndex = newContent == ContentType.movie ? 0 : 1;
     _pageController.animateToPage(
@@ -54,58 +53,29 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Called by MoviesHomeScreen when inner page changes
   void _onMovieInnerPageChanged(int index) {
     _movieInnerPageIndex = index;
   }
 
-  // Called by SeriesMainScreen when inner page changes
   void _onSeriesInnerPageChanged(int index) {
     _seriesInnerPageIndex = index;
   }
 
-  // Custom swipe detector to handle cross-page swipes between Movies and Series
-  void _handleHorizontalDrag(DragUpdateDetails details) {
-    final dx = details.delta.dx;
+  void _handleHorizontalDragEnd(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    const velocityThreshold = 500;
 
-    // Sensitivity threshold for swipe detection
-    const sensitivity = 10;
-
-    if (dx > sensitivity) {
-      // Swipe right (move to previous tab/page)
-      if (_currentIndex == 1) {
-        // Currently on Series
-        if (_seriesInnerPageIndex == 0) {
-          // If at first inner tab in Series, swipe right should go to last Movies inner tab (Top Rated)
-          _pageController.animateToPage(
-            0,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
-          // Also notify MoviesHomeScreen to set inner tab to last (handled inside MoviesHomeScreen)
-        } else {
-          // Otherwise, inner swipe right within Series tabs is handled inside SeriesMainScreen
-        }
-      } else {
-        // Currently on Movies — inner swipes handled inside MoviesHomeScreen
+    if (velocity > velocityThreshold) {
+      // Swipe Right → Go to Movies from Series
+      if (_currentIndex == 1 && _seriesInnerPageIndex == 0) {
+        _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+        _moviesKey.currentState?.jumpToPage(2); // Top Rated
       }
-    } else if (dx < -sensitivity) {
-      // Swipe left (move to next tab/page)
-      if (_currentIndex == 0) {
-        // Currently on Movies
-        if (_movieInnerPageIndex == 2) {
-          // If at last inner tab in Movies, swipe left should go to first Series inner tab (Airing Today)
-          _pageController.animateToPage(
-            1,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
-          // Also notify SeriesMainScreen to set inner tab to first (handled inside SeriesMainScreen)
-        } else {
-          // Otherwise, inner swipe left handled inside MoviesHomeScreen
-        }
-      } else {
-        // Currently on Series — inner swipes handled inside SeriesMainScreen
+    } else if (velocity < -velocityThreshold) {
+      // Swipe Left → Go to Series from Movies
+      if (_currentIndex == 0 && _movieInnerPageIndex == 2) {
+        _pageController.animateToPage(1, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+        _seriesKey.currentState?.jumpToPage(0); // Airing Today
       }
     }
   }
@@ -139,29 +109,20 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-
-      // GestureDetector wraps PageView to detect horizontal swipes
       body: GestureDetector(
-        onHorizontalDragUpdate: _handleHorizontalDrag,
+        onHorizontalDragEnd: _handleHorizontalDragEnd,
         child: PageView(
           controller: _pageController,
           onPageChanged: _onPageChanged,
           physics: const ClampingScrollPhysics(),
           children: [
-            // Pass callbacks to get inner page changes
             MoviesHomeScreen(
+              key: _moviesKey,
               onInnerPageChanged: _onMovieInnerPageChanged,
-              jumpToPage: (index) {
-                // For when user swipes from Series → Movies and you want to set inner tab
-                // Will be handled inside MoviesHomeScreen
-              },
             ),
             SeriesMainScreen(
+              key: _seriesKey,
               onInnerPageChanged: _onSeriesInnerPageChanged,
-              jumpToPage: (index) {
-                // For when user swipes from Movies → Series and want to set inner tab
-                // Will be handled inside SeriesMainScreen
-              },
             ),
           ],
         ),
