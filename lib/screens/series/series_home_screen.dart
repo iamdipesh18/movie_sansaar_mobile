@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:movie_sansaar_mobile/screens/search_screen.dart';
 import 'package:movie_sansaar_mobile/widgets/drawer.dart';
 import 'airing_today_series_screen.dart';
 import 'popular_series_screen.dart';

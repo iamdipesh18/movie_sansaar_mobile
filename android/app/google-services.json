@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "277759196890",
+    "project_id": "movie-sansaar-d48d9",
+    "storage_bucket": "movie-sansaar-d48d9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:277759196890:android:55957bc5233ab05eaa6fe3",
+        "android_client_info": {
+          "package_name": "com.example.movie_sansaar_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQKN7rEzGAW5PN6AmgZs2TlbtoEMDnWqo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

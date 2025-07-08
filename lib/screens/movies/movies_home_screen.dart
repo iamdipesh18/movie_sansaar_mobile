@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:movie_sansaar_mobile/screens/search_screen.dart';
 import 'package:movie_sansaar_mobile/widgets/drawer.dart';
 import 'now_playing_screen.dart';
 import 'popular_screen.dart';
