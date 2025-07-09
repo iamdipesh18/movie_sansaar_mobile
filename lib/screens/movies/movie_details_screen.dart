@@ -1,11 +1,12 @@
-// lib/screens/movie_details_screen.dart
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-// import 'package:movie_sansaar_mobile/screens/movie_stream_screen.dart';
+import 'package:provider/provider.dart';
 import '../../models/movie.dart';
 import '../../services/movie_api_service.dart';
 import '../trailer_player_screen.dart';
+import '../../services/auth_service.dart';
+import '../../providers/favourites_provider.dart';
 
 class MovieDetailsScreen extends StatefulWidget {
   final Movie movie; // Initial lightweight movie object (from list screen)
@@ -19,6 +20,7 @@ class MovieDetailsScreen extends StatefulWidget {
 class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
   Movie? _movie; // Holds full movie details after API call
   bool _isLoading = true;
+  bool _isProcessingFavorite = false; // To prevent multiple taps
 
   @override
   void initState() {
@@ -27,7 +29,7 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
   }
 
   // Fetches full movie details from TMDB
-  void _loadFullMovieDetails() async {
+  Future<void> _loadFullMovieDetails() async {
     try {
       final fullMovie = await MovieApiService().fetchMovieDetails(
         widget.movie.id,
@@ -36,8 +38,10 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
         _movie = fullMovie;
         _isLoading = false;
       });
+      // No need to set favorite here, provider will manage that
     } catch (e) {
       debugPrint('Error loading movie details: $e');
+      setState(() => _isLoading = false);
     }
   }
 
@@ -55,31 +59,6 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
       ),
     );
   }
-//   void _navigateToMovieStream() {
-//   if (_movie == null || _movie!.streamingUrl == null || _movie!.streamingUrl!.isEmpty) return;
-
-//   Navigator.of(context).push(
-//     MaterialPageRoute(
-//       builder: (_) => MovieStreamScreen(
-//         videoUrl: _movie!.streamingUrl!,
-//         title: _movie!.title,
-//       ),
-//     ),
-//   );
-// }
-
-  // Navigate to movie stream screen
-  // void _navigateToMovieStream() {
-  //   if (_movie == null) return;
-  //   Navigator.of(context).push(
-  //     MaterialPageRoute(
-  //       builder: (_) => MovieStreamScreen(
-  //         tmdbId: _movie!.id.toString(),
-  //         imdbId: _movie!.imdbId,
-  //       ),
-  //     ),
-  //   );
-  // }
 
   /// Floating back button placed over the header
   Widget _buildBackButton() {
@@ -96,8 +75,98 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
     );
   }
 
+  /// Favorite button placed on the top right corner
+  Widget _buildFavoriteButton() {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final favoritesProvider = Provider.of<FavoritesProvider>(context);
+    final isLoggedIn = authService.currentUser != null;
+
+    // Get favorite state from provider directly
+    final isFavorited = _movie != null
+        ? favoritesProvider.isFavorited(_movie!.id.toString())
+        : false;
+
+    Future<void> handleFavoriteTap() async {
+      if (_isProcessingFavorite) return; // Prevent multiple taps
+
+      if (!isLoggedIn) {
+        showDialog(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Login Required'),
+            content: const Text('Please sign in to add favorites.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(dialogContext);
+                  Future.microtask(
+                    () => Navigator.pushNamed(context, '/signin'),
+                  );
+                },
+                child: const Text('Sign In'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('Cancel'),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+
+      setState(() {
+        _isProcessingFavorite = true;
+      });
+
+      try {
+        if (isFavorited) {
+          await favoritesProvider.removeFavorite(_movie!.id.toString());
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Removed from favorites')),
+          );
+        } else {
+          await favoritesProvider.addFavorite(_movie!.id.toString());
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Added to favorites')));
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error updating favorites: $e')));
+      } finally {
+        setState(() {
+          _isProcessingFavorite = false;
+        });
+      }
+    }
+
+    return Positioned(
+      top: MediaQuery.of(context).padding.top + 12,
+      right: 12,
+      child: CircleAvatar(
+        backgroundColor: Theme.of(
+          context,
+        ).colorScheme.surface.withOpacity(0.75),
+        child: IconButton(
+          icon: Icon(
+            isFavorited ? Icons.favorite : Icons.favorite_border,
+            color: isFavorited
+                ? Colors.redAccent
+                : Theme.of(context).iconTheme.color,
+          ),
+          tooltip: isFavorited ? 'Remove from favorites' : 'Add to favorites',
+          onPressed: handleFavoriteTap,
+        ),
+      ),
+    );
+  }
+
   // Build the large backdrop with overlay content (title, tagline, buttons)
   Widget _buildBackdropHeader() {
+    if (_movie == null) return const SizedBox.shrink();
+
     return Stack(
       children: [
         CachedNetworkImage(
@@ -122,9 +191,8 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
             ),
           ),
         ),
-        // 🔥 BACK BUTTON - add this line
         _buildBackButton(),
-        // Overlay text & buttons
+        _buildFavoriteButton(), // Favorite button here
         Positioned(
           bottom: 24,
           left: 16,
@@ -179,12 +247,7 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                     background: Colors.redAccent,
                   ),
                   const SizedBox(width: 12),
-                  // _buildGlassButton(
-                  //   icon: Icons.ondemand_video,
-                  //   label: 'Watch Movie',
-                  //   onTap: _navigateToMovieStream,
-                  //   background: Colors.green,
-                  // ),
+                  // Add more buttons here if needed
                 ],
               ),
             ],
@@ -263,7 +326,7 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
             .map(
               (genre) => Chip(
                 label: Text(genre),
-                backgroundColor: Colors.grey.shade200,
+                backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
               ),
             )
             .toList(),
@@ -288,7 +351,7 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _buildContent(),

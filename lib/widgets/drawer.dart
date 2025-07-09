@@ -3,18 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/content_type.dart';
 import '../providers/theme_provider.dart';
+import '../services/auth_service.dart'; // Auth service for login state
 
 class ModernDrawer extends StatelessWidget {
   const ModernDrawer({super.key});
 
-  /// Helper to navigate and close drawer
+  /// Reusable helper to navigate and close the drawer
   void _navigateTo(
     BuildContext context,
     String route, {
     ContentType? contentType,
   }) {
-    Navigator.pop(context);
-    FocusScope.of(context).unfocus();
+    Navigator.pop(context); // Close the drawer
+    FocusScope.of(context).unfocus(); // Dismiss keyboard
 
     final currentRoute = ModalRoute.of(context)?.settings.name;
     if (currentRoute != route) {
@@ -25,13 +26,14 @@ class ModernDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final user = authService.currentUser;
     final isDark = themeProvider.isDarkMode;
 
-    // Gradient colors matching header and drawer background
-final gradientColors = isDark
-    ? [Colors.black, Colors.grey.shade900]
-    : [const Color(0xFF8973B3), const Color(0xFF8973B3)];
-
+    // Background gradient based on theme
+    final gradientColors = isDark
+        ? [Colors.black, Colors.grey.shade900]
+        : [const Color(0xFF8973B3), const Color(0xFF8973B3)];
 
     return ClipRRect(
       borderRadius: const BorderRadius.only(
@@ -41,15 +43,12 @@ final gradientColors = isDark
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
         child: GestureDetector(
-          // Detect drag right-to-left inside drawer to close it
           onHorizontalDragUpdate: (details) {
-            if (details.delta.dx < -10) {
-              Navigator.pop(context);
-            }
+            if (details.delta.dx < -10) Navigator.pop(context);
           },
           child: Drawer(
             elevation: 16,
-            backgroundColor: Colors.transparent, // So gradient shows fully
+            backgroundColor: Colors.transparent,
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(colors: gradientColors),
@@ -57,7 +56,7 @@ final gradientColors = isDark
               child: SafeArea(
                 child: Column(
                   children: [
-                    // Drawer header with logo, title, and tagline
+                    // ---------- Drawer Header ----------
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -95,7 +94,7 @@ final gradientColors = isDark
                       ),
                     ),
 
-                    // The main navigation list with white/black backgrounds and dark/light icons
+                    // ---------- Main List ----------
                     Expanded(
                       child: Container(
                         color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
@@ -138,6 +137,46 @@ final gradientColors = isDark
 
                             const Divider(height: 32),
 
+                            // ---------- Favourites ----------
+                            _buildTile(
+                              context,
+                              icon: Icons.favorite_outline,
+                              label: 'Favourites',
+                              onTap: () {
+                                if (user != null) {
+                                  _navigateTo(context, '/favourites');
+                                } else {
+                                  // Show login prompt
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Login Required'),
+                                      content: const Text(
+                                        'Please sign in to view your favourites.',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                            _navigateTo(context, '/signin');
+                                          },
+                                          child: const Text('Sign In'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                          child: const Text('Cancel'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                              },
+                              isDark: isDark,
+                            ),
+
+                            const Divider(height: 32),
+
                             _buildTile(
                               context,
                               icon: Icons.contact_mail_outlined,
@@ -145,20 +184,12 @@ final gradientColors = isDark
                               onTap: () => _navigateTo(context, '/contact'),
                               isDark: isDark,
                             ),
-                            _buildTile(
-                              context,
-                              icon: Icons.app_registration_rounded,
-                              label: 'Sign Up',
-                              onTap: () => _navigateTo(context, '/signup'),
-                              isDark: isDark,
-                            ),
 
-                            const Divider(height: 32),
-
-                            // Theme toggle tile
+                            // ---------- Theme Toggle ----------
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
+                                vertical: 4,
                               ),
                               child: ListTile(
                                 shape: RoundedRectangleBorder(
@@ -169,14 +200,11 @@ final gradientColors = isDark
                                   color: isDark ? Colors.white : Colors.black87,
                                 ),
                                 title: Text(
-                                  isDark
-                                      ? 'Light Mode'
-                                      : 'Dark Mode',
+                                  isDark ? 'Light Mode' : 'Dark Mode',
                                   style: TextStyle(
                                     color: isDark
                                         ? Colors.white
                                         : Colors.black87,
-                                    // fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 trailing: Switch(
@@ -189,15 +217,51 @@ final gradientColors = isDark
                               ),
                             ),
 
+                            const SizedBox(height: 32),
+
+                            // ---------- Divider ----------
+                            const Divider(height: 32),
+
+                            // ---------- Log Out (if logged in) or Sign Up (if logged out) ----------
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              child: user != null
+                                  ? _buildTile(
+                                      context,
+                                      icon: Icons.logout,
+                                      label: 'Log Out',
+                                      onTap: () async {
+                                        await authService.signOut();
+                                        Navigator.pop(context);
+                                        Navigator.pushReplacementNamed(
+                                          context,
+                                          '/combined_home',
+                                        );
+                                      },
+                                      isDark: isDark,
+                                    )
+                                  : _buildTile(
+                                      context,
+                                      icon: Icons.app_registration_rounded,
+                                      label: 'Sign Up',
+                                      onTap: () =>
+                                          _navigateTo(context, '/signup'),
+                                      isDark: isDark,
+                                    ),
+                            ),
+
                             const SizedBox(height: 16),
                           ],
                         ),
                       ),
                     ),
 
-                    // Footer text with subtle color
+                    // ---------- Footer ----------
                     Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.all(16),
                       child: Text(
                         '© 2025 Movie Sansaar',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -215,7 +279,7 @@ final gradientColors = isDark
     );
   }
 
-  /// Build each navigation tile with proper icon colors and hover effect
+  /// Helper for drawer tiles
   Widget _buildTile(
     BuildContext context, {
     required IconData icon,
