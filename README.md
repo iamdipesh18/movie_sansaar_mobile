@@ -33,11 +33,17 @@ This project requires a .env file (or secure in-code storage) for:
 ## 🧱 Project Structure
 
 lib/
+
 ├── models/            # Movie and series models
+
 ├── services/          # API services for movies, series, search
+
 ├── providers/         # State management (favorites, auth, etc.)
+
 ├── screens/           # All UI screens (home, search, details, etc.)
+
 ├── widgets/           # Reusable UI components
+
 └── main.dart          # Entry point
 
 ---
@@ -87,7 +93,7 @@ Or build locally (see below).
 ## 🛠️ Installation & Setup
 
 ### 🔧 Prerequisites
-- Flutter SDK (3.8.1 or higher)
+- Flutter SDK 
 - Dart SDK
 - Android Studio or VS Code
 - Firebase project (for Auth and Firestore)
