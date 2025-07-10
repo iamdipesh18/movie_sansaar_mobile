@@ -19,6 +19,51 @@ It features rich search, voice recognition, favorite tracking, hosted playback s
 
 ---
 
+## 🔐 Environment Variables
+
+This project requires a .env file (or secure in-code storage) for:
+
+-TMDB_API_KEY
+-Firebase credentials (handled via config files)
+
+---
+
+## 🧱 Project Structure
+
+lib/
+├── models/            # Movie and series models
+├── services/          # API services for movies, series, search
+├── providers/         # State management (favorites, auth, etc.)
+├── screens/           # All UI screens (home, search, details, etc.)
+├── widgets/           # Reusable UI components
+└── main.dart          # Entry point
+
+---
+
+## 📚 Tech Stack
+
+- Flutter
+- Dart
+- TMDB API
+- Firebase Auth + Firestore
+- Provider for state management
+- Speech to Text, Video Player, YouTube Player, Cached Network Image
+
+---
+
+## 🤝 Contributing
+
+Pull requests are welcome!
+Please open an issue first to discuss what you’d like to change.
+
+---
+
+## 🧑‍💻 Author
+
+Dipesh Dhungana
+
+---
+
 ## 📦 Download APK
 
 > 👉 [Download Latest APK](https://github.com/iamdipesh18/movie_sansaar_mobile/releases/latest)
