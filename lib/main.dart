@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // ✅ NEW
 import 'package:firebase_core/firebase_core.dart';
 import 'package:movie_sansaar_mobile/providers/favourites_provider.dart';
 import 'package:movie_sansaar_mobile/screens/favourites_screen.dart';
@@ -21,8 +22,12 @@ import 'providers/series_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/content_type_provider.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ✅ Load .env variables first
+  await dotenv.load();
+
   await Firebase.initializeApp();
 
   final authService = AuthService();
@@ -37,7 +42,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         Provider<AuthService>.value(value: authService),
         ChangeNotifierProvider<FavoritesProvider>(
-          create: (_) => FavoritesProvider(authService: authService, firestore: firestore),
+          create: (_) =>
+              FavoritesProvider(authService: authService, firestore: firestore),
         ),
       ],
       child: const MyApp(),

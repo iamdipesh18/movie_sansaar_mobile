@@ -1,9 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // ✅ NEW
 import '../models/movie.dart';
 import 'package:movie_sansaar_mobile/config/api_endpoint.dart';
 
 class MovieApiService {
+  // ✅ Load API key from .env
+  final String _apiKey = dotenv.env['TMDB_API_KEY'] ?? '';
+
   // In-memory cache for movie details
   final Map<int, Movie> _movieDetailsCache = {};
 
@@ -20,7 +24,7 @@ class MovieApiService {
     }
   }
 
-  // General fetch function to reuse with different endpoints
+  // Reusable fetch function for different endpoints
   Future<List<Movie>> fetchMovies(String url) async {
     final response = await http.get(Uri.parse(url));
 
@@ -33,10 +37,10 @@ class MovieApiService {
     }
   }
 
-  // Fetch trailer key for YouTube trailer (used for playing video)
+  // ✅ Secure fetch of trailer key
   Future<String?> fetchTrailerKey(int movieId) async {
     final url = Uri.parse(
-      'https://api.themoviedb.org/3/movie/$movieId/videos?api_key=c186762f14592e810da1278859304e21&language=en-US',
+      'https://api.themoviedb.org/3/movie/$movieId/videos?api_key=$_apiKey&language=en-US',
     );
 
     final response = await http.get(url);
@@ -45,7 +49,6 @@ class MovieApiService {
       final data = json.decode(response.body);
       final videos = data['results'] as List;
 
-      // Find the first YouTube trailer
       final trailer = videos.firstWhere(
         (video) => video['site'] == 'YouTube' && video['type'] == 'Trailer',
         orElse: () => null,
@@ -57,26 +60,22 @@ class MovieApiService {
     }
   }
 
-  // ✅ NEW: Fetch full movie details including genres, runtime, videos, cast, etc.
+  // ✅ Secure full movie details fetch with caching
   Future<Movie> fetchMovieDetails(int movieId) async {
-    // Return from cache if available
     if (_movieDetailsCache.containsKey(movieId)) {
       return _movieDetailsCache[movieId]!;
     }
 
     final url = Uri.parse(
-      'https://api.themoviedb.org/3/movie/$movieId?api_key=c186762f14592e810da1278859304e21&language=en-US&append_to_response=videos,credits',
+      'https://api.themoviedb.org/3/movie/$movieId?api_key=$_apiKey&language=en-US&append_to_response=videos,credits',
     );
 
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      final movie = Movie.fromJson(data); // Uses expanded model
-
-      // Save to cache
+      final movie = Movie.fromJson(data);
       _movieDetailsCache[movieId] = movie;
-
       return movie;
     } else {
       throw Exception('Failed to fetch movie details');

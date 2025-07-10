@@ -1,22 +1,23 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // ✅ NEW
 import '../models/series.dart';
 import '../models/season_and_episode.dart';
-import '../models/genre.dart'; // <-- Import Genre model
+import '../models/genre.dart';
 
 class ApiEndpoints {
   static const String baseUrl = 'https://api.themoviedb.org/3';
 }
 
 class SeriesApiService {
-  final String _apiKey = 'c186762f14592e810da1278859304e21';
+  // ✅ Load the API key securely from .env
+  final String _apiKey = dotenv.env['TMDB_API_KEY'] ?? '';
 
   Uri _buildUri(String path, [Map<String, String>? queryParams]) {
     final query = {'api_key': _apiKey, 'language': 'en-US', ...?queryParams};
     return Uri.parse('${ApiEndpoints.baseUrl}$path').replace(queryParameters: query);
   }
 
-  /// Fetch the list of TV genres from TMDB
   Future<List<Genre>> fetchGenres() async {
     final url = _buildUri('/genre/tv/list');
     final response = await http.get(url);
@@ -30,8 +31,6 @@ class SeriesApiService {
     }
   }
 
-  /// Fetches series currently airing today
-  /// Accepts optional genreMap to convert genre IDs to Genre objects
   Future<List<Series>> fetchAiringToday([Map<int, Genre>? genreMap]) async {
     final url = _buildUri('/tv/airing_today', {'page': '1'});
     final response = await http.get(url);
@@ -39,7 +38,6 @@ class SeriesApiService {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final results = data['results'] as List<dynamic>;
-      // Use genreMap to parse genres properly if provided
       return results
           .map((json) =>
               genreMap != null ? Series.fromListJson(json, genreMap) : Series.fromJson(json))
@@ -49,7 +47,6 @@ class SeriesApiService {
     }
   }
 
-  /// Fetches popular series
   Future<List<Series>> fetchPopular([Map<int, Genre>? genreMap]) async {
     final url = _buildUri('/tv/popular', {'page': '1'});
     final response = await http.get(url);
@@ -66,7 +63,6 @@ class SeriesApiService {
     }
   }
 
-  /// Fetches top rated series
   Future<List<Series>> fetchTopRated([Map<int, Genre>? genreMap]) async {
     final url = _buildUri('/tv/top_rated', {'page': '1'});
     final response = await http.get(url);
@@ -83,7 +79,6 @@ class SeriesApiService {
     }
   }
 
-  /// Fetch basic series details by series ID
   Future<Series> fetchSeriesDetails(int seriesId) async {
     final url = _buildUri('/tv/$seriesId');
     final response = await http.get(url);
@@ -96,7 +91,6 @@ class SeriesApiService {
     }
   }
 
-  /// Fetch full series details including videos and credits
   Future<Series> fetchFullDetails(int seriesId) async {
     final url = _buildUri('/tv/$seriesId', {'append_to_response': 'videos,credits'});
     final response = await http.get(url);
@@ -109,7 +103,6 @@ class SeriesApiService {
     }
   }
 
-  /// Fetches trailer video key (YouTube) for a series
   Future<String?> fetchTrailerKey(int seriesId) async {
     final url = _buildUri('/tv/$seriesId/videos');
     final response = await http.get(url);
@@ -129,7 +122,6 @@ class SeriesApiService {
     }
   }
 
-  /// Search for series using a query string
   Future<List<Series>> searchSeries(String query) async {
     final url = _buildUri('/search/tv', {'query': query, 'page': '1'});
     final response = await http.get(url);
@@ -143,7 +135,6 @@ class SeriesApiService {
     }
   }
 
-  /// Fetches episodes of a given season in a series
   Future<List<Episode>> fetchEpisodes(int seriesId, int seasonNumber) async {
     final url = _buildUri('/tv/$seriesId/season/$seasonNumber');
     final response = await http.get(url);
