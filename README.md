@@ -1,16 +1,107 @@
-# movie_sansaar_mobile
+# 🎬 Movie Sansaar
 
-A new Flutter project.
+Movie Sansaar is a modern Flutter-based movie and TV series discovery app powered by the [TMDB API](https://www.themoviedb.org/).  
+It features rich search, voice recognition, favorite tracking, hosted playback support, and a sleek streaming-style UI.
 
-## Getting Started
+<p align="center">
+  <img src="assets/logo/ms_logo.png" alt="Movie Sansaar Logo" width="150" />
+</p>
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+## 🚀 Features
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- 🔍 **Smart Search** – Find movies and series by title using a dynamic grid layout
+- 🎤 **Voice Search** – Search with your voice using speech-to-text
+- ❤️ **Favorites** – Add/remove movies and series to a unified favorites list
+- 🎥 **Trailer & Playback** – Watch YouTube trailers or self-hosted full movies
+- 🌐 **TMDB API Integration** – All metadata pulled from The Movie Database
+- 📱 **Responsive UI** – Designed for modern mobile devices with dark mode support
+- 🔒 **Firebase Auth + Firestore** – Secure login and user-based favorites storage
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+## 🔐 Environment Variables
+
+This project requires a .env file (or secure in-code storage) for:
+
+- TMDB_API_KEY
+- Firebase credentials (handled via config files)
+
+---
+
+## 🧱 Project Structure
+
+lib/
+
+├── models/            # Movie and series models
+
+├── services/          # API services for movies, series, search
+
+├── providers/         # State management (favorites, auth, etc.)
+
+├── screens/           # All UI screens (home, search, details, etc.)
+
+├── widgets/           # Reusable UI components
+
+└── main.dart          # Entry point
+
+---
+
+## 📚 Tech Stack
+
+- Flutter
+- Dart
+- TMDB API
+- Firebase Auth + Firestore
+- Provider for state management
+- Speech to Text, Video Player, YouTube Player, Cached Network Image
+
+---
+
+## 🤝 Contributing
+
+Pull requests are welcome!
+Please open an issue first to discuss what you’d like to change.
+
+---
+
+## 🧑‍💻 Author
+
+Dipesh Dhungana
+
+---
+
+## 📦 Download APK
+
+> 👉 [Download Latest APK](https://github.com/iamdipesh18/movie_sansaar_mobile/releases/latest)
+
+Or build locally (see below).
+
+---
+
+## 📷 Screenshots
+
+| Home | Search | Favorites | Voice |
+|------|--------|-----------|-------|
+| ![Home](assets/screenshots/home.png) | ![Search](assets/screenshots/search.png) | ![Favorites](assets/screenshots/fav.png) | ![Voice](assets/screenshots/voice.png) |
+
+> (Add your own screenshots in `assets/screenshots/` and update this table.)
+
+---
+
+## 🛠️ Installation & Setup
+
+### 🔧 Prerequisites
+- Flutter SDK 
+- Dart SDK
+- Android Studio or VS Code
+- Firebase project (for Auth and Firestore)
+
+### 🧪 Run Locally
+
+```bash
+git clone https://github.com/iamdipesh18/movie_sansaar_mobile.git
+cd movie_sansaar_mobile
+flutter pub get
+flutter run
