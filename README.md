@@ -3,7 +3,9 @@
 Movie Sansaar is a modern Flutter-based movie and TV series discovery app powered by the [TMDB API](https://www.themoviedb.org/).  
 It features rich search, voice recognition, favorite tracking, hosted playback support, and a sleek streaming-style UI.
 
-![Movie Sansaar Banner](assets/logo/ms_logo.png)
+<p align="center">
+  <img src="assets/logo/ms_logo.png" alt="Movie Sansaar Logo" width="150" />
+</p>
 
 ---
 
