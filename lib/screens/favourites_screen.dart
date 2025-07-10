@@ -86,36 +86,57 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     );
   }
 
-  Widget _buildUnifiedGrid() {
+  Widget _buildAnimatedGrid() {
     final isLoading = _isLoading && _favoriteItems.isEmpty;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: isLoading ? 6 : _favoriteItems.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.66,
-          crossAxisSpacing: 8,
-          mainAxisSpacing: 8,
-        ),
-        itemBuilder: (context, index) {
-          if (isLoading) return const FavoritesShimmerCard();
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: isLoading
+          ? GridView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: 6,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.66,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+              ),
+              itemBuilder: (_, __) => const FavoritesShimmerCard(),
+            )
+          : GridView.builder(
+              key: ValueKey(_favoriteItems.length), // Important for AnimatedSwitcher
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _favoriteItems.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.66,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+              ),
+              itemBuilder: (context, index) {
+                final item = _favoriteItems[index];
 
-          final item = _favoriteItems[index];
-          return FavoritesResultCard(
-            movie: item.type == 'movie' ? item.item : null,
-            series: item.type == 'series' ? item.item : null,
-            onUnfavorited: () {
-              setState(() {
-                _favoriteItems.removeAt(index);
-              });
-            },
-          );
-        },
-      ),
+                return AnimatedOpacity(
+                  key: ValueKey(item.item.id),
+                  duration: const Duration(milliseconds: 300),
+                  opacity: 1.0,
+                  child: FavoritesResultCard(
+                    movie: item.type == 'movie' ? item.item : null,
+                    series: item.type == 'series' ? item.item : null,
+                    onUnfavorited: () {
+                      setState(() {
+                        _favoriteItems.removeAt(index);
+                      });
+                    },
+                    iconColor: Colors.red, // Ensure red icon is passed
+                  ),
+                );
+              },
+            ),
     );
   }
 
@@ -141,7 +162,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     onRefresh: _refreshFavorites,
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      child: _buildUnifiedGrid(),
+                      child: _buildAnimatedGrid(),
                     ),
                   ),
       ),

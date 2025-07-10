@@ -14,7 +14,7 @@ class FavoritesResultCard extends StatefulWidget {
     super.key,
     this.movie,
     this.series,
-    this.onUnfavorited,
+    this.onUnfavorited, required MaterialColor iconColor,
   });
 
   @override

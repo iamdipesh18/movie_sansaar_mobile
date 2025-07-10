@@ -52,7 +52,10 @@ class _FavoriteButtonState extends State<FavoriteButton>
               onPressed: () {
                 Navigator.pop(dialogContext);
                 Future.microtask(() {
-                  Navigator.of(dialogContext, rootNavigator: true).pushNamed('/signin');
+                  Navigator.of(
+                    dialogContext,
+                    rootNavigator: true,
+                  ).pushNamed('/signin');
                 });
               },
               child: const Text('Sign In'),
@@ -70,14 +73,14 @@ class _FavoriteButtonState extends State<FavoriteButton>
     if (isFavorited) {
       await favoritesProvider.removeFavorite(widget.movieId);
       widget.onUnfavorited?.call();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Removed from favorites')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Removed from favorites')));
     } else {
       await favoritesProvider.addFavorite(widget.movieId, type: widget.type);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Added to favorites')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Added to favorites')));
     }
   }
 
@@ -93,14 +96,16 @@ class _FavoriteButtonState extends State<FavoriteButton>
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOut,
           child: CircleAvatar(
-            backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.75),
+            backgroundColor: Theme.of(
+              context,
+            ).colorScheme.surface.withOpacity(0.75),
             child: IconButton(
-              tooltip: isFavorited ? 'Remove from favorites' : 'Add to favorites',
+              tooltip: isFavorited
+                  ? 'Remove from favorites'
+                  : 'Add to favorites',
               icon: Icon(
                 isFavorited ? Icons.favorite : Icons.favorite_border,
-                color: isFavorited
-                    ? favoriteColor
-                    : Theme.of(context).iconTheme.color,
+                color: isFavorited ? Colors.red : Colors.red.withOpacity(0.4),
               ),
               onPressed: () => _handleTap(context, isFavorited),
             ),
