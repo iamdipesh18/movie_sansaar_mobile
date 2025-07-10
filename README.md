@@ -25,8 +25,8 @@ It features rich search, voice recognition, favorite tracking, hosted playback s
 
 This project requires a .env file (or secure in-code storage) for:
 
--TMDB_API_KEY
--Firebase credentials (handled via config files)
+- TMDB_API_KEY
+- Firebase credentials (handled via config files)
 
 ---
 
