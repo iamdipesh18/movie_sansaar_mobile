@@ -268,7 +268,8 @@ class ModernDrawer extends StatelessWidget {
                       child: Text(
                         '© 2025 Movie Sansaar',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: isDark ? Colors.white54 : Colors.black54,
+                          color: isDark ? Colors.white54 : Colors.white54,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),

@@ -7,7 +7,7 @@
 
 
     <application
-        android:label="movie_sansaar_mobile"
+        android:label="Movie Sansaar"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         

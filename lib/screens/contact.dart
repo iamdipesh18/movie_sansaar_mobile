@@ -42,7 +42,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
       child: Scaffold(
         body: Stack(
           children: [
-            // 🌈 Background gradient
+            // 🌈 Background gradient or white in bright mode
             Container(
               decoration: BoxDecoration(
                 gradient: isDark
@@ -51,11 +51,8 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       )
-                    : const LinearGradient(
-                        colors: [Color(0xFFEEE5FF), Color(0xFF8973B3)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                    : null, // no gradient in bright mode
+                color: isDark ? null : Colors.white, // white bg in bright mode
               ),
             ),
 
@@ -187,14 +184,14 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                             ),
                             const SizedBox(height: 24),
 
-                            // 🔴 Submit button
+                            // 🔴 Submit button with bright mode color update
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: isDark
                                       ? Colors.redAccent
-                                      : Colors.black,
+                                      : Colors.deepPurple, // bright mode purple
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 14,
                                   ),
