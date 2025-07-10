@@ -86,8 +86,6 @@ Or build locally (see below).
 |------|--------|-----------|-------|
 | ![Home](assets/screenshots/home.png) | ![Search](assets/screenshots/search.png) | ![Favorites](assets/screenshots/fav.png) | ![Voice](assets/screenshots/voice.png) |
 
-> (Add your own screenshots in `assets/screenshots/` and update this table.)
-
 ---
 
 ## 🛠️ Installation & Setup
