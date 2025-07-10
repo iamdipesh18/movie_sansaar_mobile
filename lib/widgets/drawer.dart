@@ -63,16 +63,16 @@ class ModernDrawer extends StatelessWidget {
                         vertical: 24,
                       ),
                       child: Row(
-                        children: const [
-                          CircleAvatar(
+                        children: [
+                          const CircleAvatar(
                             radius: 30,
                             backgroundImage: AssetImage('assets/logo.png'),
                           ),
-                          SizedBox(width: 12),
+                          const SizedBox(width: 12),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              const Text(
                                 'Movie Sansaar',
                                 style: TextStyle(
                                   fontSize: 20,
@@ -80,10 +80,13 @@ class ModernDrawer extends StatelessWidget {
                                   color: Colors.white,
                                 ),
                               ),
-                              SizedBox(height: 4),
+                              const SizedBox(height: 4),
                               Text(
-                                'Your movie world',
-                                style: TextStyle(
+                                user?.fullName != null &&
+                                        user!.fullName!.trim().isNotEmpty
+                                    ? user.fullName!
+                                    : 'Your movie world',
+                                style: const TextStyle(
                                   fontSize: 13,
                                   color: Colors.white70,
                                 ),
