@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:movie_sansaar_mobile/screens/movies/movies_home_screen.dart';
 import 'package:movie_sansaar_mobile/screens/search_screen.dart';
 import 'package:movie_sansaar_mobile/screens/series/series_home_screen.dart';
@@ -24,6 +25,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final GlobalKey<MoviesHomeScreenState> _moviesKey = GlobalKey();
   final GlobalKey<SeriesMainScreenState> _seriesKey = GlobalKey();
+
+  DateTime? _lastBackPressed;
 
   @override
   void initState() {
@@ -66,65 +69,95 @@ class _HomeScreenState extends State<HomeScreen> {
     const velocityThreshold = 500;
 
     if (velocity > velocityThreshold) {
-      // Swipe Right → Go to Movies from Series
       if (_currentIndex == 1 && _seriesInnerPageIndex == 0) {
-        _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-        _moviesKey.currentState?.jumpToPage(2); // Top Rated
+        _pageController.animateToPage(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+        _moviesKey.currentState?.jumpToPage(2);
       }
     } else if (velocity < -velocityThreshold) {
-      // Swipe Left → Go to Series from Movies
       if (_currentIndex == 0 && _movieInnerPageIndex == 2) {
-        _pageController.animateToPage(1, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-        _seriesKey.currentState?.jumpToPage(0); // Airing Today
+        _pageController.animateToPage(
+          1,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+        _seriesKey.currentState?.jumpToPage(0);
       }
     }
   }
 
+  Future<bool> _onWillPop() async {
+    final now = DateTime.now();
+    if (_lastBackPressed == null ||
+        now.difference(_lastBackPressed!) > const Duration(seconds: 2)) {
+      _lastBackPressed = now;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Press back again to exit'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return false;
+    }
+
+    // Exit app safely
+    await SystemNavigator.pop();
+    return false; // prevent any navigation (avoids 404)
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: const ModernDrawer(),
-      appBar: AppBar(
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
-        title: ContentToggle(
-          selected: _currentIndex == 0 ? ContentType.movie : ContentType.series,
-          onChanged: _onToggleChanged,
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SearchScreen()),
-              );
-            },
-            tooltip: 'Search',
-          ),
-        ],
-      ),
-      body: GestureDetector(
-        onHorizontalDragEnd: _handleHorizontalDragEnd,
-        child: PageView(
-          controller: _pageController,
-          onPageChanged: _onPageChanged,
-          physics: const ClampingScrollPhysics(),
-          children: [
-            MoviesHomeScreen(
-              key: _moviesKey,
-              onInnerPageChanged: _onMovieInnerPageChanged,
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        drawer: const ModernDrawer(),
+        appBar: AppBar(
+          leading: Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () => Scaffold.of(context).openDrawer(),
             ),
-            SeriesMainScreen(
-              key: _seriesKey,
-              onInnerPageChanged: _onSeriesInnerPageChanged,
+          ),
+          title: ContentToggle(
+            selected: _currentIndex == 0
+                ? ContentType.movie
+                : ContentType.series,
+            onChanged: _onToggleChanged,
+          ),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SearchScreen()),
+                );
+              },
+              tooltip: 'Search',
             ),
           ],
+        ),
+        body: GestureDetector(
+          onHorizontalDragEnd: _handleHorizontalDragEnd,
+          child: PageView(
+            controller: _pageController,
+            onPageChanged: _onPageChanged,
+            physics: const ClampingScrollPhysics(),
+            children: [
+              MoviesHomeScreen(
+                key: _moviesKey,
+                onInnerPageChanged: _onMovieInnerPageChanged,
+              ),
+              SeriesMainScreen(
+                key: _seriesKey,
+                onInnerPageChanged: _onSeriesInnerPageChanged,
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:movie_sansaar_mobile/models/search_result_model.dart';
 import 'package:movie_sansaar_mobile/services/search_services.dart';
@@ -29,6 +30,9 @@ class _SearchScreenState extends State<SearchScreen>
   // Animation
   late AnimationController _micPulseController;
 
+  // Debounce
+  Timer? _debounce;
+
   @override
   void initState() {
     super.initState();
@@ -37,14 +41,28 @@ class _SearchScreenState extends State<SearchScreen>
       vsync: this,
       duration: const Duration(milliseconds: 800),
     )..repeat(reverse: true);
+
+    _controller.addListener(_onQueryChanged);
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_onQueryChanged);
+    _debounce?.cancel();
     _controller.dispose();
     _speech.stop();
     _micPulseController.dispose();
     super.dispose();
+  }
+
+  void _onQueryChanged() {
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 400), () {
+      final input = _controller.text.trim();
+      if (input.isNotEmpty && input != _query) {
+        _onSearch(input);
+      }
+    });
   }
 
   Future<void> _onSearch(String query) async {
@@ -57,9 +75,9 @@ class _SearchScreenState extends State<SearchScreen>
       final results = await _searchService.searchAll(_query);
       setState(() => _results = results);
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Search failed: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Search failed: $e')),
+      );
     } finally {
       setState(() => _isLoading = false);
     }
@@ -150,36 +168,47 @@ class _SearchScreenState extends State<SearchScreen>
               ),
             ],
           ),
-          body: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _query.isEmpty
-              ? const Center(
-                  child: Text('Start typing or use mic to search...'),
-                )
-              : _results.isEmpty
-              ? const Center(child: Text('No results found.'))
-              : Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  child: GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 12,
-                          crossAxisSpacing: 12,
-                          childAspectRatio: 0.65,
+          body: _controller.text.isEmpty
+              ? const Center(child: Text('Start typing or use mic to search...'))
+              : _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _results.isEmpty
+                      ? const Center(child: Text('No results found.'))
+                      : ListView(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          children: [
+                            if (_controller.text != _query)
+                              ..._results.take(6).map((result) => ListTile(
+                                    leading: const Icon(Icons.search),
+                                    title: Text(result.title),
+                                    onTap: () {
+                                      _controller.text = result.title;
+                                      _onSearch(result.title);
+                                      FocusScope.of(context).unfocus();
+                                    },
+                                  )),
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 12,
+                                crossAxisSpacing: 12,
+                                childAspectRatio: 0.65,
+                              ),
+                              itemCount: _results.length,
+                              itemBuilder: (context, index) {
+                                return SearchResultCard(
+                                    result: _results[index]);
+                              },
+                            ),
+                          ],
                         ),
-                    itemCount: _results.length,
-                    itemBuilder: (context, index) {
-                      return SearchResultCard(result: _results[index]);
-                    },
-                  ),
-                ),
         ),
 
-        // YouTube-style mic listening overlay
+        // Mic listening overlay
         if (_isListening)
           GestureDetector(
             onTap: _stopListening,
